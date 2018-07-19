@@ -1,9 +1,8 @@
-const assert = require('assert')
-const bitcoin = require('../../')
-const dhttp = require('dhttp/200')
+var bitcoin = require('../../')
+var dhttp = require('dhttp/200')
 
-const APIPASS = process.env.APIPASS || 'satoshi'
-const APIURL = 'https://api.dcousens.cloud/1'
+var APIPASS = process.env.APIPASS || 'satoshi'
+var APIURL = 'https://api.dcousens.cloud/1'
 
 function broadcast (txHex, callback) {
   dhttp({
@@ -45,7 +44,7 @@ function faucet (address, value, callback) {
 function fetch (txId, callback) {
   dhttp({
     method: 'GET',
-    url: APIURL + '/t/' + txId + '/json'
+    url: APIURL + '/t/' + txId
   }, callback)
 }
 
@@ -57,24 +56,20 @@ function unspents (address, callback) {
 }
 
 function verify (txo, callback) {
-  fetch(txo.txId, function (err, tx) {
+  let { txId } = txo
+
+  fetch(txId, function (err, txHex) {
     if (err) return callback(err)
 
-    const txoActual = tx.outs[txo.vout]
-    if (txo.address) assert.strictEqual(txoActual.address, txo.address)
-    if (txo.value) assert.strictEqual(txoActual.value, txo.value)
+    // TODO: verify address and value
     callback()
   })
 }
 
-function getAddress (node, network) {
-  return bitcoin.payments.p2pkh({ pubkey: node.publicKey, network }).address
-}
-
 function randomAddress () {
-  return getAddress(bitcoin.ECPair.makeRandom({
+  return bitcoin.ECPair.makeRandom({
     network: bitcoin.networks.testnet
-  }), bitcoin.networks.testnet)
+  }).getAddress()
 }
 
 module.exports = {
