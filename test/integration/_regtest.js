@@ -56,7 +56,7 @@ function unspents (address, callback) {
 }
 
 function verify (txo, callback) {
-  let { txId } = txo
+  var { txId } = txo
 
   fetch(txId, function (err, txHex) {
     if (err) return callback(err)
