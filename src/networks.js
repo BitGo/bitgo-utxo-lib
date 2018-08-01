@@ -11,7 +11,7 @@ module.exports = {
     },
     pubKeyHash: 0x4c, // https://dash-docs.github.io/en/developer-reference#opcodes
     scriptHash: 0x10,
-    wif: 0x80, // https://github.com/dashpay/godashutil/blob/master/wif.go#L72
+    wif: 204,
     coin: coins.DASH
   },
   dashTest: {
