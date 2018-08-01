@@ -11,7 +11,7 @@ module.exports = {
     },
     pubKeyHash: 0x4c, // https://dash-docs.github.io/en/developer-reference#opcodes
     scriptHash: 0x10,
-    wif: 204,
+    wif: 0xcc,
     coin: coins.DASH
   },
   dashTest: {
