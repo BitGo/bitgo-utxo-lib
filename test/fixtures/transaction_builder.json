@@ -1673,7 +1673,7 @@
         "txHex": "0200000001f2465438bc993057d18e698cffc0b0d6f4f72dbb34a45f0ef48b922f37b1898500000000fc0047304402200685dca480d2fbdede321e6a8dacc495105b77d13ed1050d097f74fd297efbaa0220141209e112e838036bdf1757a7984df21df23fd735c77a9f2ad1025f1ee7af650147304402203f205962349dc4da062c15b73126b38f5e5e8016fe317e3dcb59bcdded117fbd022036386f24da402f821d259557b521561d78079069f5c80f4c8993a8a8af610e83014c69522102fa7a51471c13df1b87ed6687be9ebc746b2801230592d7541061eddcc91c5b3d210363945f699f409787e6348b0bb5dbd0fe795cf7d0133ced5e13e8aa3c26db761121035ce5bf6521535490e39b6516e8c55986cf8bd13e33b8044a71ba61d3c8e01fac53aeffffffff01400d0300000000001976a914ae4038c16a7a946e5d880f7ba74278ca24ea724588ac00000000"
       },
       {
-        "description": "P2SH 2-of-3 multisig, signed by key 1 and 2 (Dash)",
+        "description": "P2SH 2-of-3 multisig, signed by key 1 and 2 (Dash) - brodcasted",
         "url_comment": "https://live.blockcypher.com/dash/tx/b87dd9fd8e0983f90a709a53c152f3acab1525c2acbaf53da3f86ce21ccab185",
         "network": "dash",
         "version": 2,
@@ -1708,7 +1708,6 @@
       },
       {
         "description": "P2SH 2-of-3 multisig, signed by key 1 and 2 (Dash testnet)",
-        "url_comment": "https://live.blockcypher.com/dash/tx/b87dd9fd8e0983f90a709a53c152f3acab1525c2acbaf53da3f86ce21ccab185",
         "network": "dashTest",
         "version": 2,
         "locktime": 0,
