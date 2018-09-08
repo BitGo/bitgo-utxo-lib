@@ -63,7 +63,7 @@ module.exports = {
     consensusBranchId: 0x5ba81b19,
     coin: coins.ZEC
   },
-  zcashTest: {
+  zcashOverwinterTest: {
     messagePrefix: '\x18ZCash Signed Message:\n',
     bech32: 'tb',
     bip32: {
@@ -74,6 +74,19 @@ module.exports = {
     scriptHash: 0x1cba,
     wif: 0xef,
     consensusBranchId: 0x5ba81b19,
+    coin: coins.ZEC
+  },
+  zcashTest: {
+    messagePrefix: '\x18ZCash Signed Message:\n',
+    bech32: 'tb',
+    bip32: {
+      public: 0x043587cf,
+      private: 0x04358394
+    },
+    pubKeyHash: 0x1d25,
+    scriptHash: 0x1cba,
+    wif: 0xef,
+    consensusBranchId: 0x76b809bb,
     coin: coins.ZEC
   },
   bitcoingold: {

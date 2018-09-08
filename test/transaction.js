@@ -102,6 +102,22 @@ describe('Transaction', function () {
         assert.equal(tx.joinsplits.length, testData.joinsplitsLength)
         assert.equal(tx.joinsplitPubkey.length, testData.joinsplitPubkeyLength)
         assert.equal(tx.joinsplitSig.length, testData.joinsplitSigLength)
+
+        if (testData.valueBalance) {
+          assert.equal(tx.valueBalance, testData.valueBalance)
+        }
+        if (testData.nShieldedSpend > 0) {
+          for (var i = 0; i < testData.nShieldedSpend; ++i) {
+            assert.equal(tx.vShieldedSpend[i].cv.toString('hex'), testData.vShieldedSpend[i].cv)
+            assert.equal(tx.vShieldedSpend[i].anchor.toString('hex'), testData.vShieldedSpend[i].anchor)
+            assert.equal(tx.vShieldedSpend[i].nullifier.toString('hex'), testData.vShieldedSpend[i].nullifier)
+            assert.equal(tx.vShieldedSpend[i].rk.toString('hex'), testData.vShieldedSpend[i].rk)
+            assert.equal(tx.vShieldedSpend[i].zkproof.sA.toString('hex') +
+              tx.vShieldedSpend[i].zkproof.sB.toString('hex') +
+              tx.vShieldedSpend[i].zkproof.sC.toString('hex'), testData.vShieldedSpend[i].zkproof)
+            assert.equal(tx.vShieldedSpend[i].spendAuthSig.toString('hex'), testData.vShieldedSpend[i].spendAuthSig)
+          }
+        }
       })
     })
 
