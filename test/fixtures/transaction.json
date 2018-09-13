@@ -742,6 +742,7 @@
         "script": "ac6a5200525352",
         "inIndex": 2,
         "type": 33836424,
+        "version": 3,
         "branchId": 1953719636,
         "hash": "967f00c292b9af74c7e770bd393f80b6a6d1c50ae639356dd66d29020d5904ed",
         "value": 0
@@ -751,6 +752,7 @@
         "script": "ac52ac0063",
         "inIndex": 0,
         "type": 623524693,
+        "version": 3,
         "branchId": 1991772603,
         "hash": "44db5f1c43284937e6bb2b25790c06fb2f22b5a25062e8455b964dbbcd9f64de",
         "value": 0
@@ -760,6 +762,7 @@
         "script": "53",
         "inIndex": 3,
         "type": 1844639429,
+        "version": 3,
         "branchId": 1991772603,
         "hash": "ed51c8db5ba2accabb1d8a718ecc0e61a55ebdf4a2a2aaa3999593e6c207f9c1",
         "value": 0
@@ -772,6 +775,7 @@
         "script": "636a",
         "inIndex": 0,
         "type": 1222904061,
+        "version": 3,
         "branchId": 1953719636,
         "hash": "334d6bd1842cd7564868943f6fcbb49de66389cde4652c07939b9d1faaf01615",
         "value": 0,

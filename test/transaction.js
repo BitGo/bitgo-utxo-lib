@@ -370,7 +370,7 @@ describe('Transaction', function () {
     fixtures.hashForZcashSignature.valid.forEach(function (testData) {
       it('should return ' + testData.hash + ' for ' + testData.description, function () {
         var network = networks.zcash
-        network.consensusBranchId = testData.branchId
+        network.consensusBranchId[testData.version] = testData.branchId
         var tx = Transaction.fromHex(testData.txHex, network)
         var script = Buffer.from(testData.script, 'hex')
         var hash = Buffer.from(testData.hash, 'hex')

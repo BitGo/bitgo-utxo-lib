@@ -246,6 +246,9 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     // Split the header into fOverwintered and nVersion
     tx.overwintered = tx.version >>> 31  // Must be 1 for version 3 and up
     tx.version = tx.version & 0x07FFFFFFF  // 3 for overwinter
+    if (!network.consensusBranchId.hasOwnProperty(tx.version)) {
+      throw new Error('Unsupported Zcash transaction')
+    }
   }
 
   var marker = buffer.readUInt8(offset)
@@ -842,7 +845,7 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     var personalization = Buffer.alloc(16)
     var prefix = 'ZcashSigHash'
     personalization.write(prefix)
-    personalization.writeUInt32LE(this.network.consensusBranchId, prefix.length)
+    personalization.writeUInt32LE(this.network.consensusBranchId[this.version], prefix.length)
 
     return this.getBlake2bHash(bufferWriter.getBuffer(), personalization)
   }
