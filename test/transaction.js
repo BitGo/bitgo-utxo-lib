@@ -93,7 +93,7 @@ describe('Transaction', function () {
       it('imports ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.zcashTest)
         assert.equal(tx.version, testData.version)
-        assert.equal(tx.versionGroupId, testData.versionGroupId)
+        assert.equal(tx.versionGroupId, parseInt(testData.versionGroupId, 16))
         assert.equal(tx.overwintered, testData.overwintered)
         assert.equal(tx.locktime, testData.locktime)
         assert.equal(tx.expiryHeight, testData.expiryHeight)
@@ -370,7 +370,7 @@ describe('Transaction', function () {
     fixtures.hashForZcashSignature.valid.forEach(function (testData) {
       it('should return ' + testData.hash + ' for ' + testData.description, function () {
         var network = networks.zcash
-        network.consensusBranchId[testData.version] = testData.branchId
+        network.consensusBranchId[testData.version] = parseInt(testData.branchId, 16)
         var tx = Transaction.fromHex(testData.txHex, network)
         var script = Buffer.from(testData.script, 'hex')
         var hash = Buffer.from(testData.hash, 'hex')

@@ -60,6 +60,8 @@ module.exports = {
     pubKeyHash: 0x1cb8,
     scriptHash: 0x1cbd,
     wif: 0x80,
+    // This parameter was introduced in version 3 to allow soft forks, for version 1 and 2 transactions we add a
+    // dummy value.
     consensusBranchId: {
       1: 0x00,
       2: 0x00,

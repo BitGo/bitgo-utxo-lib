@@ -39,7 +39,7 @@ function Transaction (network = networks.bitcoin) {
     this.joinsplitSig = []
     // ZCash version >= 3
     this.overwintered = 0
-    this.versionGroupId = 0  // 0x03C48270 (63210096) for overwinter
+    this.versionGroupId = 0  // 0x03C48270 (63210096) for overwinter and 0x892F2085 (2301567109) for sapling
     this.expiryHeight = 0
     // ZCash version >= 4
     this.valueBalance = 0
@@ -100,6 +100,12 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
   function readInt32 () {
     var i = buffer.readInt32LE(offset)
     offset += 4
+    return i
+  }
+
+  function readInt64 () {
+    var i = bufferutils.readInt64LE(buffer, offset)
+    offset += 8
     return i
   }
 
@@ -296,16 +302,13 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
 
   tx.locktime = readUInt32()
 
-  if (coins.isZcash(network) && tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
-    tx.expiryHeight = readUInt32()
-  }
+  if (coins.isZcash(network)) {
+    if (tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+      tx.expiryHeight = readUInt32()
+    }
 
-  if (coins.isZcash(network) && tx.version >= Transaction.ZCASH_SAPLING_VERSION) {
-    tx.valueBalance = readUInt64()
-  }
-
-  if (coins.isZcash(network) && tx.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
     if (tx.version >= Transaction.ZCASH_SAPLING_VERSION) {
+      tx.valueBalance = readInt64()
       var nShieldedSpend = readVarInt()
       for (i = 0; i < nShieldedSpend; ++i) {
         tx.vShieldedSpend.push(readShieldedSpend())
@@ -316,20 +319,22 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
         tx.vShieldedOutput.push(readShieldedOutput())
       }
     }
-    var joinSplitsLen = readVarInt()
-    for (i = 0; i < joinSplitsLen; ++i) {
-      tx.joinsplits.push(readJoinSplit())
-    }
-    if (joinSplitsLen > 0) {
-      tx.joinsplitPubkey = readSlice(32)
-      tx.joinsplitSig = readSlice(64)
-    }
-  }
 
-  if (coins.isZcash(network) &&
-    tx.version >= Transaction.ZCASH_SAPLING_VERSION &&
-    tx.vShieldedSpend.length + tx.vShieldedOutput.length > 0) {
-    tx.bindingSig = readSlice(64)
+    if (tx.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
+      var joinSplitsLen = readVarInt()
+      for (i = 0; i < joinSplitsLen; ++i) {
+        tx.joinsplits.push(readJoinSplit())
+      }
+      if (joinSplitsLen > 0) {
+        tx.joinsplitPubkey = readSlice(32)
+        tx.joinsplitSig = readSlice(64)
+      }
+    }
+
+    if (tx.version >= Transaction.ZCASH_SAPLING_VERSION &&
+      tx.vShieldedSpend.length + tx.vShieldedOutput.length > 0) {
+      tx.bindingSig = readSlice(64)
+    }
   }
 
   tx.network = network
@@ -409,6 +414,11 @@ Transaction.prototype.byteLength = function () {
 }
 
 Transaction.prototype.getShieldedSpendByteLength = function () {
+  // TODO: Throw if we are using the wrong network
+  if (!coins.isZcash(this.network) || this.version < Transaction.ZCASH_SAPLING_VERSION) {
+    return 0
+  }
+
   var byteLength = 0
   byteLength += varuint.encodingLength(this.vShieldedSpend.length)  // nShieldedSpend
   byteLength += (384 * this.vShieldedSpend.length)  // vShieldedSpend
@@ -416,6 +426,10 @@ Transaction.prototype.getShieldedSpendByteLength = function () {
 }
 
 Transaction.prototype.getShieldedOutputByteLength = function () {
+  // TODO: Throw if we are using the wrong network
+  if (!coins.isZcash(this.network) || this.version < Transaction.ZCASH_SAPLING_VERSION) {
+    return 0
+  }
   var byteLength = 0
   byteLength += varuint.encodingLength(this.vShieldedOutput.length)  // nShieldedOutput
   byteLength += (948 * this.vShieldedOutput.length)  // vShieldedOutput
@@ -468,7 +482,7 @@ Transaction.prototype.zcashTransactionByteLength = function () {
   byteLength += this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0)  // tx_in
   byteLength += varuint.encodingLength(this.outs.length)  // tx_out_count
   byteLength += this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0)  // tx_out
-  byteLength += 4  // tx_out
+  byteLength += 4  // lock_time
   if (this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
     byteLength += 4  // nExpiryHeight
   }
@@ -495,14 +509,12 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
   }
 
   return (
-    (coins.isZcash(this.network) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION ? 8 : 0) +
     (hasWitnesses ? 10 : 8) +
     varuint.encodingLength(this.ins.length) +
     varuint.encodingLength(this.outs.length) +
     this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0) +
     this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) +
-    (hasWitnesses ? this.ins.reduce(function (sum, input) { return sum + vectorSize(input.witness) }, 0) : 0) +
-    this.getJoinSplitByteLength()
+    (hasWitnesses ? this.ins.reduce(function (sum, input) { return sum + vectorSize(input.witness) }, 0) : 0)
   )
 }
 
@@ -798,13 +810,14 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
 
     var bufferWriter
     var baseBufferSize = 0
-    baseBufferSize += 4 * 5
-    baseBufferSize += 32 * 4
+    baseBufferSize += 4 * 5  // header, nVersionGroupId, lock_time, nExpiryHeight, hashType
+    baseBufferSize += 32 * 4  // 256 hashes: hashPrevouts, hashSequence, hashOutputs, hashJoinSplits
     if (inIndex !== VALUE_UINT64_MAX) {
       // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig), we need extra space
-      baseBufferSize += 4 * 4
-      baseBufferSize += 32
-      baseBufferSize += varSliceSize(prevOutScript)
+      baseBufferSize += 4 * 2  // input.index, input.sequence
+      baseBufferSize += 8  // value
+      baseBufferSize += 32  // input.hash
+      baseBufferSize += varSliceSize(prevOutScript)  // prevOutScript
     }
     if (this.version >= Transaction.ZCASH_SAPLING_VERSION) {
       baseBufferSize += 32 * 2  // hashShieldedSpends and hashShieldedOutputs
