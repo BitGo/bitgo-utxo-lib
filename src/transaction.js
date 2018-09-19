@@ -40,7 +40,7 @@ function Transaction (network = networks.bitcoin) {
     // ZCash version >= 3
     this.overwintered = 0  // 1 if the transaction is post overwinter upgrade, 0 otherwise
     this.versionGroupId = 0  // 0x03C48270 (63210096) for overwinter and 0x892F2085 (2301567109) for sapling
-    this.expiryHeight = 0  // Block height after which this transactions valid, or 0 to disable iexpiry
+    this.expiryHeight = 0  // Block height after which this transactions will expire, or 0 to disable expiry
     // ZCash version >= 4
     this.valueBalance = 0
     this.vShieldedSpend = []
@@ -153,7 +153,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
 
   function readZKProof () {
     var zkproof
-    if (tx.version >= Transaction.ZCASH_SAPLING_VERSION) {
+    if (tx.isSaplingCompatible()) {
       zkproof = {
         sA: readSlice(48),
         sB: readSlice(96),
@@ -269,7 +269,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     hasWitnesses = true
   }
 
-  if (coins.isZcash(network) && tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+  if (tx.isOverwinterCompatible()) {
     tx.versionGroupId = readUInt32()
   }
 
@@ -304,11 +304,11 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
   tx.locktime = readUInt32()
 
   if (coins.isZcash(network)) {
-    if (tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+    if (tx.isOverwinterCompatible()) {
       tx.expiryHeight = readUInt32()
     }
 
-    if (tx.version >= Transaction.ZCASH_SAPLING_VERSION) {
+    if (tx.isSaplingCompatible()) {
       tx.valueBalance = readInt64()
       var nShieldedSpend = readVarInt()
       for (i = 0; i < nShieldedSpend; ++i) {
@@ -321,7 +321,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
       }
     }
 
-    if (tx.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
+    if (tx.supportsJoinSplits()) {
       var joinSplitsLen = readVarInt()
       for (i = 0; i < joinSplitsLen; ++i) {
         tx.joinsplits.push(readJoinSplit())
@@ -332,7 +332,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
       }
     }
 
-    if (tx.version >= Transaction.ZCASH_SAPLING_VERSION &&
+    if (tx.isSaplingCompatible() &&
       tx.vShieldedSpend.length + tx.vShieldedOutput.length > 0) {
       tx.bindingSig = readSlice(64)
     }
@@ -350,6 +350,14 @@ Transaction.fromHex = function (hex, network) {
   return Transaction.fromBuffer(Buffer.from(hex, 'hex'), network)
 }
 
+Transaction.isCoinbaseHash = function (buffer) {
+  typeforce(types.Hash256bit, buffer)
+  for (var i = 0; i < 32; ++i) {
+    if (buffer[i] !== 0) return false
+  }
+  return true
+}
+
 Transaction.prototype.isSaplingCompatible = function () {
   return coins.isZcash(this.network) && this.version >= Transaction.ZCASH_SAPLING_VERSION
 }
@@ -360,14 +368,6 @@ Transaction.prototype.isOverwinterCompatible = function () {
 
 Transaction.prototype.supportsJoinSplits = function () {
   return coins.isZcash(this.network) && this.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION
-}
-
-Transaction.isCoinbaseHash = function (buffer) {
-  typeforce(types.Hash256bit, buffer)
-  for (var i = 0; i < 32; ++i) {
-    if (buffer[i] !== 0) return false
-  }
-  return true
 }
 
 Transaction.prototype.isCoinbase = function () {
@@ -451,34 +451,30 @@ Transaction.prototype.getJoinSplitByteLength = function () {
   if (!this.supportsJoinSplits()) {
     return 0
   }
+  var joinSplitsLen = this.joinsplits.length
+  var byteLength = 0
+  byteLength += bufferutils.varIntSize(joinSplitsLen)  // vJoinSplit
 
-  var pubkeySigLength = (this.joinsplits.length > 0) ? (32 + 64) : 0
+  if (joinSplitsLen > 0) {
+    // Both pre and post Sapling JoinSplits are encoded with the following data:
+    // 8 vpub_old, 8 vpub_new, 32 anchor, joinSplitsLen * 32 nullifiers, joinSplitsLen * 32 commitments, 32 ephemeralKey
+    // 32 ephemeralKey, 32 randomSeed, joinsplit.macs.length * 32 vmacs
+    if (this.isSaplingCompatible()) {
+      byteLength += 1698 * joinSplitsLen  // vJoinSplit using JSDescriptionGroth16
+    } else {
+      byteLength += 1802 * joinSplitsLen  // vJoinSplit using JSDescriptionPHGR13
+    }
+    byteLength += 32  // joinSplitPubKey
+    byteLength += 64  // joinSplitSig
+  }
 
-  return (
-    bufferutils.varIntSize(this.joinsplits.length) +
-    this.joinsplits.reduce(function (sum, joinsplit) {
-      var byteLength = 0
-      byteLength += 8  // vpub_old
-      byteLength += 8  // vpub_new
-      byteLength += 32  // anchor
-      byteLength += joinsplit.nullifiers.length * 32  // nullifiers
-      byteLength += joinsplit.commitments.length * 32  // commitments
-      byteLength += 32  // ephemeralKey
-      byteLength += 32  // randomSeed
-      byteLength += joinsplit.macs.length * 32  // vmacs
-      if (this.version >= Transaction.ZCASH_SAPLING_VERSION) {
-        byteLength += 192  // zkproof Groth16 encoding
-      } else {
-        byteLength += 296  // zkproof PHGR13 encoding
-      }
-      byteLength += joinsplit.ciphertexts.length * Transaction.ZCASH_NOTECIPHERTEXT_SIZE
-      return sum + byteLength
-    }, 0) +
-    pubkeySigLength
-  )
+  return byteLength
 }
 
 Transaction.prototype.zcashTransactionByteLength = function () {
+  if (!coins.isZcash(this.network)) {
+    throw new Error('zcashTransactionByteLength can only be called when using Zcash network')
+  }
   var byteLength = 0
   byteLength += 4  // Header
   if (this.isOverwinterCompatible()) {
@@ -796,6 +792,9 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
  */
 Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, value, hashType) {
   typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
+  if (!coins.isZcash(this.network)) {
+    throw new Error('hashForZcashSignature can only be called when using Zcash network')
+  }
   if (this.joinsplits.length > 0) {
     throw new Error('Hash signature for Zcash protected transactions is not supported')
   }
@@ -1104,7 +1103,7 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
 
   // avoid slicing unless necessary
   if (initialOffset !== undefined) return buffer.slice(initialOffset, offset)
-  // TODO: we are doing some miscalculation somewhere, we shouldn't have to slice the final buffer
+  // TODO (https://github.com/BitGo/bitgo-utxo-lib/issues/11): we shouldn't have to slice the final buffer
   return buffer.slice(0, offset)
 }
 
