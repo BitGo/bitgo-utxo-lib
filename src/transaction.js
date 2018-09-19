@@ -38,9 +38,9 @@ function Transaction (network = networks.bitcoin) {
     this.joinsplitPubkey = []
     this.joinsplitSig = []
     // ZCash version >= 3
-    this.overwintered = 0
+    this.overwintered = 0  // 1 if the transaction is post overwinter upgrade, 0 otherwise
     this.versionGroupId = 0  // 0x03C48270 (63210096) for overwinter and 0x892F2085 (2301567109) for sapling
-    this.expiryHeight = 0
+    this.expiryHeight = 0  // Block height after which this transactions valid, or 0 to disable iexpiry
     // ZCash version >= 4
     this.valueBalance = 0
     this.vShieldedSpend = []
@@ -62,6 +62,7 @@ var EMPTY_SCRIPT = Buffer.allocUnsafe(0)
 var EMPTY_WITNESS = []
 var ZERO = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
 var ONE = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex')
+// Used to represent the absence of a value
 var VALUE_UINT64_MAX = Buffer.from('ffffffffffffffff', 'hex')
 var BLANK_OUTPUT = {
   script: EMPTY_SCRIPT,
