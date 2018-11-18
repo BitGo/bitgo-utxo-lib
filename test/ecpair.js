@@ -275,7 +275,7 @@ describe('ECPair', function () {
 
       it('wraps ecdsa.verify', sinon.test(function () {
         this.mock(fastcurve).expects('verify')
-          .once().withArgs(hash, signature, keyPair.getPublicKeyBuffer()).returns(undefined);
+          .once().withArgs(hash, signature, keyPair.getPublicKeyBuffer()).returns(undefined)
         this.mock(ecdsa).expects('verify')
           .once().withArgs(hash, signature, keyPair.Q)
 
@@ -288,7 +288,6 @@ describe('ECPair', function () {
 
         keyPair.verify(hash, signature)
       }))
-
     })
   })
 })

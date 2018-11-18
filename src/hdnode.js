@@ -338,7 +338,7 @@ HDNode.prototype.derivePath = function (path, cache) {
  * Uses secp256k1 if available for accelerated computation of the cloned public key.
  * @return {ECPair}
  */
-HDNode.prototype.cloneKeypair = function() {
+HDNode.prototype.cloneKeypair = function () {
   typeforce(types.maybe(types.Network), arguments)
   var k = this.keyPair
   var result = new ECPair(k.d, k.d ? null : k.Q, {
