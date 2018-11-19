@@ -1,4 +1,7 @@
+var typeforce = require('typeforce')
+
 var ECSignature = require('./ecsignature')
+var types = require('./types')
 
 var secp256k1
 var available = false
@@ -23,6 +26,8 @@ try {
  * @return {undefined}
  */
 var publicKeyCreate = function (buffer, compressed) {
+  typeforce(types.tuple(types.Buffer256bit, types.Boolean), arguments)
+
   if (!available) {
     return undefined
   }
@@ -31,6 +36,8 @@ var publicKeyCreate = function (buffer, compressed) {
 }
 
 var sign = function (hash, d) {
+  typeforce(types.tuple(types.Buffer256bit, types.BigInt), arguments)
+
   if (!available) {
     return undefined
   }
@@ -40,6 +47,13 @@ var sign = function (hash, d) {
 }
 
 var verify = function (hash, sig, pubkey) {
+  typeforce(types.tuple(
+    types.Hash256bit,
+    types.ECSignature,
+    // both compressed and uncompressed public keys are fine
+    types.oneOf(types.BufferN(33), types.BufferN(65))),
+    arguments)
+
   if (!available) {
     return undefined
   }

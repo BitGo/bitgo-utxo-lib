@@ -339,7 +339,6 @@ HDNode.prototype.derivePath = function (path, cache) {
  * @return {ECPair}
  */
 HDNode.prototype.cloneKeypair = function () {
-  typeforce(types.maybe(types.Network), arguments)
   var k = this.keyPair
   var result = new ECPair(k.d, k.d ? null : k.Q, {
     network: k.network,
