@@ -4,20 +4,34 @@ var fastMerkleRoot = require('merkle-lib/fastRoot')
 var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
+var networks = require('./networks')
+var coins = require('./coins')
 
 var Transaction = require('./transaction')
 
-function Block () {
+function Block (network) {
+  typeforce(types.maybe(types.Network), network)
+  network = network || networks.bitcoin
   this.version = 1
   this.prevHash = null
   this.merkleRoot = null
   this.timestamp = 0
   this.bits = 0
   this.nonce = 0
+  this.network = network
+  if (coins.isZcash(network)) {
+    this.finalSaplingRoot = null
+    this.solutionSize = 0
+    this.solution = null
+  }
 }
 
-Block.fromBuffer = function (buffer) {
+Block.HEADER_BYTE_SIZE = 80
+Block.ZCASH_HEADER_BYTE_SIZE = 1487
+
+Block.fromBuffer = function (buffer, network) {
   if (buffer.length < 80) throw new Error('Buffer too small (< 80 bytes)')
+  network = network || networks.bitcoin
 
   var offset = 0
   function readSlice (n) {
@@ -37,24 +51,34 @@ Block.fromBuffer = function (buffer) {
     return i
   }
 
-  var block = new Block()
-  block.version = readInt32()
-  block.prevHash = readSlice(32)
-  block.merkleRoot = readSlice(32)
-  block.timestamp = readUInt32()
-  block.bits = readUInt32()
-  block.nonce = readUInt32()
-
-  if (buffer.length === 80) return block
-
   function readVarInt () {
     var vi = varuint.decode(buffer, offset)
     offset += varuint.decode.bytes
     return vi
   }
 
+  var block = new Block(network)
+  block.version = readInt32()
+  block.prevHash = readSlice(32)
+  block.merkleRoot = readSlice(32)
+  if (coins.isZcash(network)) {
+    block.finalSaplingRoot = readSlice(32)
+  }
+  block.timestamp = readUInt32()
+  block.bits = readUInt32()
+  if (coins.isZcash(network)) {
+    block.nonce = readSlice(32)
+    block.solutionSize = readVarInt()
+    block.solution = readSlice(1344)
+  } else {
+    // Not sure sure why the nonce is read as UInt 32 and not as a slice
+    block.nonce = readUInt32()
+  }
+
+  if (buffer.length === 80) return block
+
   function readTransaction () {
-    var tx = Transaction.fromBuffer(buffer.slice(offset), undefined, true)
+    var tx = Transaction.fromBuffer(buffer.slice(offset), network, true)
     offset += tx.byteLength()
     return tx
   }
@@ -71,15 +95,26 @@ Block.fromBuffer = function (buffer) {
 }
 
 Block.prototype.byteLength = function (headersOnly) {
-  if (headersOnly || !this.transactions) return 80
+  if (coins.isZcash(this.network)) {
+    if (headersOnly) {
+      return Block.ZCASH_HEADER_BYTE_SIZE
+    }
+    return Block.ZCASH_HEADER_BYTE_SIZE +
+      varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
+        return a + x.byteLength()
+      }, 0)
+  }
 
-  return 80 + varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
-    return a + x.byteLength()
-  }, 0)
+  if (headersOnly || !this.transactions) return Block.HEADER_BYTE_SIZE
+
+  return Block.HEADER_BYTE_SIZE +
+    varuint.encodingLength(this.transactions.length) + this.transactions.reduce(function (a, x) {
+      return a + x.byteLength()
+    }, 0)
 }
 
-Block.fromHex = function (hex) {
-  return Block.fromBuffer(Buffer.from(hex, 'hex'))
+Block.fromHex = function (hex, network) {
+  return Block.fromBuffer(Buffer.from(hex, 'hex'), network)
 }
 
 Block.prototype.getHash = function () {
@@ -119,9 +154,20 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeInt32(this.version)
   writeSlice(this.prevHash)
   writeSlice(this.merkleRoot)
+  if (coins.isZcash(this.network)) {
+    writeSlice(this.finalSaplingRoot)
+  }
   writeUInt32(this.timestamp)
   writeUInt32(this.bits)
-  writeUInt32(this.nonce)
+  if (coins.isZcash(this.network)) {
+    writeSlice(this.nonce)
+    varuint.encode(this.solutionSize, buffer, offset)
+    offset += varuint.encode.bytes
+    writeSlice(this.solution)
+  } else {
+    // Not sure sure why the nonce is read as UInt 32 and not as a slice
+    writeUInt32(this.nonce)
+  }
 
   if (headersOnly || !this.transactions) return buffer
 
