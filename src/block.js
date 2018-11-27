@@ -165,7 +165,7 @@ Block.prototype.toBuffer = function (headersOnly) {
     offset += varuint.encode.bytes
     writeSlice(this.solution)
   } else {
-    // Not sure sure why the nonce is read as UInt 32 and not as a slice
+    // Not sure sure why the nonce is interpreted as UInt 32 and not a slice in bitcoin
     writeUInt32(this.nonce)
   }
 
@@ -191,7 +191,18 @@ Block.calculateTarget = function (bits) {
   var exponent = ((bits & 0xff000000) >> 24) - 3
   var mantissa = bits & 0x007fffff
   var target = Buffer.alloc(32, 0)
-  target.writeUInt32BE(mantissa, 28 - exponent)
+  if (exponent < 0) {
+    // If it is negative, we will overflow the target buffer so we have to slice the mantissa to fit
+    mantissa = mantissa >> (8 * Math.abs(exponent))
+    target.writeUInt32BE(mantissa, 28)
+  } else if (exponent > 28) {
+    // If it is greater than 28, we need to shift the mantissa since the offset cannot be greater than 32 - 4
+    // (safe-buffer restriction)
+    mantissa <<= 8 * (exponent - 28)
+    target.writeUInt32BE(mantissa, 0)
+  } else {
+    target.writeUInt32BE(mantissa, 28 - exponent)
+  }
   return target
 }
 

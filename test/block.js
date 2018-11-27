@@ -57,7 +57,7 @@ describe('Block', function () {
         assert.strictEqual(block.prevHash.reverse().toString('hex'), f.prevHash)
         assert.strictEqual(block.merkleRoot.reverse().toString('hex'), f.merkleRoot)
         assert.strictEqual(block.timestamp, f.timestamp)
-        // assert.strictEqual(block.bits, parseInt(f.bits, 16))
+        assert.strictEqual(block.bits, parseInt(f.bits, 16))
         assert.strictEqual(block.nonce.reverse().toString('hex'), f.nonce)
         assert.strictEqual(block.finalSaplingRoot.reverse().toString('hex'), f.finalSaplingRoot)
         assert.strictEqual(block.solutionSize, f.solutionSize)
