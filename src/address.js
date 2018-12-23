@@ -6,6 +6,29 @@ var btemplates = require('./templates')
 var networks = require('./networks')
 var typeforce = require('typeforce')
 var types = require('./types')
+var zcrypto = require('./crypto')
+
+/*
+ * Makes a private key
+ * @param {String phrase (Password phrase)
+ * @return {Sting} Private key
+ */
+function mkPrivKey (phrase) {
+  return zcrypto.sha256(Buffer.from(phrase, 'utf-8'))
+}
+
+/*
+ * Converts a private key to WIF format
+ * @param {String} privKey (private key)
+ * @param {boolean} toCompressed (Convert to WIF compressed key or nah)
+ * @param {String} wif (wif hashing bytes (default: 0x80))
+ * @return {Sting} WIF format (uncompressed)
+ */
+function privKeyToWIF (privKey, toCompressed = false, wif = '0x80') {
+  if (toCompressed) privKey = privKey + '01'
+
+  return bs58check.encode(Buffer.from(wif + privKey, 'hex'))
+}
 
 function fromBase58Check (address) {
   var payload = bs58check.decode(address)
