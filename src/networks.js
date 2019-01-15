@@ -63,7 +63,7 @@ module.exports = {
     coin: coins.BSV,
     forkId: 0x00
   },
-  bitcoincashsv: {
+  bitcoinsvTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bech32: 'tb',
     bip32: {
