@@ -210,7 +210,7 @@ describe('TransactionBuilder', function () {
     })
   })
 
-  var networksToTest = ['bitcoin', 'bitcoingold', 'bitcoincash', 'bitcoinsv', 'zcashTest']
+  var networksToTest = ['bitcoin', 'bitcoincash', 'bitcoingold', 'bitcoinsv', 'dash', 'litecoin', 'zcash']
   networksToTest.forEach(function (network) {
     describe('addInput for ' + network, function () {
       var testNetwork = NETWORKS[network]
