@@ -12,6 +12,8 @@ var ECPair = require('./ecpair')
 var ecurve = require('ecurve')
 var curve = ecurve.getCurveByName('secp256k1')
 
+var bs58checkBase = require('bs58check/base')
+
 var fastcurve = require('./fastcurve')
 
 function HDNode (keyPair, chainCode) {
@@ -56,7 +58,10 @@ HDNode.fromSeedHex = function (hex, network) {
 }
 
 HDNode.fromBase58 = function (string, networks) {
-  var buffer = base58check.decode(string)
+  if (Array.isArray(networks)) {
+    networks = networks[0] || NETWORKS.bitcoin
+  }
+  var buffer = bs58checkBase(networks.hashFunctions.address).decode(string)
   if (buffer.length !== 78) throw new Error('Invalid buffer length')
 
   // 4 bytes: version bytes
@@ -202,7 +207,7 @@ HDNode.prototype.toBase58 = function (__isPrivate) {
     this.keyPair.getPublicKeyBuffer().copy(buffer, 45)
   }
 
-  return base58check.encode(buffer)
+  return bs58checkBase(network.hashFunctions.address).encode(buffer)
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-ckd-functions
