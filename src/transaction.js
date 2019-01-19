@@ -25,13 +25,12 @@ function vectorSize (someVector) {
   }, 0)
 }
 
-// By default, assume is a bitcoin transaction
-function Transaction (network = networks.bitcoin) {
+function Transaction (network) {
   this.version = 1
   this.locktime = 0
   this.ins = []
   this.outs = []
-  this.network = network
+  this.network = network || networks.bitcoin
   if (coins.isZcash(network)) {
     // ZCash version >= 2
     this.joinsplits = []
@@ -554,8 +553,8 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
   )
 }
 
-Transaction.prototype.clone = function () {
-  var newTx = new Transaction(this.network)
+Transaction.prototype.clone = function (network) {
+  var newTx = new Transaction(network)
   newTx.version = this.version
   newTx.locktime = this.locktime
   newTx.network = this.network
@@ -721,7 +720,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   buffer.writeInt32LE(hashType, buffer.length - 4)
   txTmp.__toBuffer(buffer, 0, false)
 
-  return bcrypto.hash256(buffer)
+  return this.network.hashFunctions.transaction(buffer)
 }
 
 /**
@@ -752,7 +751,7 @@ Transaction.prototype.getPrevoutHash = function (hashType) {
     if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashPrevoutHash')
     }
-    return bcrypto.hash256(bufferWriter.getBuffer())
+    return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
   }
   return ZERO
 }
@@ -775,7 +774,7 @@ Transaction.prototype.getSequenceHash = function (hashType) {
     if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashSequencHash')
     }
-    return bcrypto.hash256(bufferWriter.getBuffer())
+    return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
   }
   return ZERO
 }
@@ -804,7 +803,7 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
     if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashOutputsHash')
     }
-    return bcrypto.hash256(bufferWriter.getBuffer())
+    return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
   } else if ((hashType & 0x1f) === Transaction.SIGHASH_SINGLE && inIndex < this.outs.length) {
     // Write only the output specified in inIndex
     var output = this.outs[inIndex]
@@ -816,7 +815,7 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
     if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashOutputsHash')
     }
-    return bcrypto.hash256(bufferWriter.getBuffer())
+    return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
   }
   return ZERO
 }
@@ -927,7 +926,7 @@ Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value
   bufferWriter.writeSlice(hashOutputs)
   bufferWriter.writeUInt32(this.locktime)
   bufferWriter.writeUInt32(hashType)
-  return bcrypto.hash256(bufferWriter.getBuffer())
+  return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
 }
 
 /**
@@ -983,7 +982,7 @@ Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, i
 }
 
 Transaction.prototype.getHash = function () {
-  return bcrypto.hash256(this.__toBuffer(undefined, undefined, false))
+  return this.network.hashFunctions.transaction(this.__toBuffer(undefined, undefined, false))
 }
 
 Transaction.prototype.getId = function () {

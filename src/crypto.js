@@ -1,5 +1,6 @@
 var createHash = require('create-hash')
 var crypto = require('crypto')
+var groestlhash = require('groestl-hash-js')
 
 function ripemd160 (buffer) {
   var hash = 'rmd160'
@@ -28,10 +29,15 @@ function hash256 (buffer) {
   return sha256(sha256(buffer))
 }
 
+function groestl (buffer) {
+  return Buffer(groestlhash.groestl_2(buffer, 1, 1))
+}
+
 module.exports = {
   hash160: hash160,
   hash256: hash256,
   ripemd160: ripemd160,
   sha1: sha1,
-  sha256: sha256
+  sha256: sha256,
+  groestl: groestl
 }

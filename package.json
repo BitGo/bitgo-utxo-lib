@@ -49,7 +49,8 @@
     "safe-buffer": "^5.0.1",
     "typeforce": "^1.11.3",
     "varuint-bitcoin": "^1.0.4",
-    "wif": "^2.0.1"
+    "wif": "^2.0.1",
+    "groestl-hash-js": "https://github.com/Groestlcoin/groestl-hash-js.git"
   },
   "devDependencies": {
     "bip39": "^2.3.0",
