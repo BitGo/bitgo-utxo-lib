@@ -3,6 +3,17 @@
 var coins = require('./coins')
 
 module.exports = {
+  ravencoin: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x3c, // https://dash-docs.github.io/en/developer-reference#opcodes
+    scriptHash: 0x7a,
+    wif: 0x80,
+    coin: coins.RVN
+  },
   dash: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
     bip32: {
