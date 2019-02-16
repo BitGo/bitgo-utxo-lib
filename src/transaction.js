@@ -25,12 +25,12 @@ function vectorSize (someVector) {
   }, 0)
 }
 
-function Transaction (network) {
+function Transaction (network = networks.bitcoin) {
   this.version = 1
   this.locktime = 0
   this.ins = []
   this.outs = []
-  this.network = network || networks.bitcoin
+  this.network = network
   if (coins.isZcash(network)) {
     // ZCash version >= 2
     this.joinsplits = []
@@ -553,8 +553,8 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
   )
 }
 
-Transaction.prototype.clone = function (network) {
-  var newTx = new Transaction(network)
+Transaction.prototype.clone = function () {
+  var newTx = new Transaction(this.network)
   newTx.version = this.version
   newTx.locktime = this.locktime
   newTx.network = this.network
