@@ -584,6 +584,7 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
 
   // Copy transaction fields
   txb.setVersion(transaction.version, transaction.overwintered)
+  txb.tx.time = transaction.time
   txb.setLockTime(transaction.locktime)
 
   if (coins.isZcash(txbNetwork)) {

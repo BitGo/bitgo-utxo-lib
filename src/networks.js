@@ -12,7 +12,8 @@ module.exports = {
     pubKeyHash: 0x4b,
     scriptHash: 0x75,
     wif: 0xcb,
-    coin: coins.XBA
+    coin: coins.XBA,
+    isPoS: true
   },
   dynamic: {
      messagePrefix: '\x18Bitcoin Signed Message:\n',
