@@ -37,11 +37,11 @@ coins.isLitecoin = function (network) {
 }
 
 coins.isZcash = function (network) {
-    return typeforce.value(coins.ZEC)(network.coin)
+  return typeforce.value(coins.ZEC)(network.coin)
 }
 
 coins.isZcashLike = function (network) {
-    return coins.isZcash(network) || coins.isKomodo(network)
+  return coins.isZcash(network) || coins.isKomodo(network)
 }
 
 coins.isValidCoin = typeforce.oneOf(
