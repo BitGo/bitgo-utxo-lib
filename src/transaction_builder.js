@@ -519,7 +519,7 @@ TransactionBuilder.prototype.setLockTime = function (locktime) {
 TransactionBuilder.prototype.setVersion = function (version, overwinter = true) {
   typeforce(types.UInt32, version)
 
-  if (coins.isZcash(this.network)) {
+  if (coins.isZcashLike(this.network)) {
     if (!this.network.consensusBranchId.hasOwnProperty(this.tx.version)) {
       throw new Error('Unsupported Zcash transaction')
     }
@@ -529,7 +529,7 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
 }
 
 TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
-  if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
+  if (!(coins.isZcashLike(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -538,7 +538,7 @@ TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
 }
 
 TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
-  if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
+  if (!(coins.isZcashLike(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -547,7 +547,7 @@ TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
 }
 
 TransactionBuilder.prototype.setJoinSplits = function (transaction) {
-  if (!(coins.isZcash(this.network) && this.tx.supportsJoinSplits())) {
+  if (!(coins.isZcashLike(this.network) && this.tx.supportsJoinSplits())) {
     throw new Error('joinsplits can only be set for Zcash starting at version 2. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -586,7 +586,7 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
   txb.setVersion(transaction.version, transaction.overwintered)
   txb.setLockTime(transaction.locktime)
 
-  if (coins.isZcash(txbNetwork)) {
+  if (coins.isZcashLike(txbNetwork)) {
     // Copy Zcash overwinter fields. If the transaction builder is not for Zcash, they will be omitted
     if (txb.tx.isOverwinterCompatible()) {
       txb.setVersionGroupId(transaction.versionGroupId)
@@ -801,7 +801,7 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   } else if (coins.isBitcoinCash(this.network) || coins.isBitcoinSV(this.network)) {
     signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
     debug('Calculated BCH sighash (%s)', signatureHash.toString('hex'))
-  } else if (coins.isZcash(this.network)) {
+  } else if (coins.isZcashLike(this.network)) {
     signatureHash = this.tx.hashForZcashSignature(vin, input.signScript, witnessValue, hashType)
     debug('Calculated ZEC sighash (%s)', signatureHash.toString('hex'))
   } else {

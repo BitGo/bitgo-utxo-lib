@@ -218,7 +218,7 @@ describe('TransactionBuilder', function () {
       var testKeyPair = new ECPair(BigInteger.ONE, undefined, { network: testNetwork })
       beforeEach(function () {
         txb = new TransactionBuilder(testNetwork)
-        if (coins.isZcash(testNetwork)) {
+        if (coins.isZcashLike(testNetwork)) {
           txb.setVersion(3)
         }
       })
@@ -283,7 +283,7 @@ describe('TransactionBuilder', function () {
       var testKeyPair = new ECPair(BigInteger.ONE, undefined, { network: testNetwork })
       beforeEach(function () {
         txb = new TransactionBuilder(testNetwork)
-        if (coins.isZcash(testNetwork)) {
+        if (coins.isZcashLike(testNetwork)) {
           txb.setVersion(3)
         }
       })
