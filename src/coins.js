@@ -29,7 +29,7 @@ coins.isBitcoinGold = function (network) {
 }
 
 coins.isKomodo = function (network) {
-    return typeforce.value(coins.KMD)(network.coin)
+  return typeforce.value(coins.KMD)(network.coin)
 }
 
 coins.isLitecoin = function (network) {
