@@ -4,13 +4,12 @@ var fastMerkleRoot = require('merkle-lib/fastRoot')
 var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
-var networks = require('./networks')
-var coins = require('./coins')
+import {Network, networks} from '../src/networks'
+import {Coins} from './coins'
 
 var Transaction = require('./transaction')
 
-function Block (network) {
-  typeforce(types.maybe(types.Network), network)
+function Block (network?: Network) {
   network = network || networks.bitcoin
   this.version = 1
   this.prevHash = null
@@ -19,7 +18,7 @@ function Block (network) {
   this.bits = 0
   this.nonce = 0
   this.network = network
-  if (coins.isZcash(network)) {
+  if (Coins.isZcash(network)) {
     this.finalSaplingRoot = null
     this.solutionSize = 0
     this.solution = null
@@ -61,12 +60,12 @@ Block.fromBuffer = function (buffer, network) {
   block.version = readInt32()
   block.prevHash = readSlice(32)
   block.merkleRoot = readSlice(32)
-  if (coins.isZcash(network)) {
+  if (Coins.isZcash(network)) {
     block.finalSaplingRoot = readSlice(32)
   }
   block.timestamp = readUInt32()
   block.bits = readUInt32()
-  if (coins.isZcash(network)) {
+  if (Coins.isZcash(network)) {
     block.nonce = readSlice(32)
     block.solutionSize = readVarInt()
     block.solution = readSlice(1344)
@@ -95,7 +94,7 @@ Block.fromBuffer = function (buffer, network) {
 }
 
 Block.prototype.byteLength = function (headersOnly) {
-  if (coins.isZcash(this.network)) {
+  if (Coins.isZcash(this.network)) {
     if (headersOnly) {
       return Block.ZCASH_HEADER_BYTE_SIZE
     }
@@ -154,12 +153,12 @@ Block.prototype.toBuffer = function (headersOnly) {
   writeInt32(this.version)
   writeSlice(this.prevHash)
   writeSlice(this.merkleRoot)
-  if (coins.isZcash(this.network)) {
+  if (Coins.isZcash(this.network)) {
     writeSlice(this.finalSaplingRoot)
   }
   writeUInt32(this.timestamp)
   writeUInt32(this.bits)
-  if (coins.isZcash(this.network)) {
+  if (Coins.isZcash(this.network)) {
     writeSlice(this.nonce)
     varuint.encode(this.solutionSize, buffer, offset)
     offset += varuint.encode.bytes
@@ -207,7 +206,6 @@ Block.calculateTarget = function (bits) {
 }
 
 Block.calculateMerkleRoot = function (transactions) {
-  typeforce([{ getHash: types.Function }], transactions)
   if (transactions.length === 0) throw TypeError('Cannot compute merkle root for zero transactions')
 
   var hashes = transactions.map(function (transaction) {

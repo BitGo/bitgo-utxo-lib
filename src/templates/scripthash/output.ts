@@ -15,8 +15,8 @@ function check (script) {
 }
 check.toJSON = function () { return 'scriptHash output' }
 
-function encode (scriptHash) {
-  typeforce(types.Hash160bit, scriptHash)
+function encode (scriptHash: Buffer) {
+  // typeforce(types.Hash160bit, scriptHash)
 
   return bscript.compile([OPS.OP_HASH160, scriptHash, OPS.OP_EQUAL])
 }

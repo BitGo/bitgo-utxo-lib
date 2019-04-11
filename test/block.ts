@@ -2,7 +2,7 @@
 
 var assert = require('assert')
 var Block = require('../src/block')
-var NETWORKS = require('../src/networks')
+import { networks } from '../src/networks'
 
 var fixtures = require('./fixtures/block')
 
@@ -51,7 +51,7 @@ describe('Block', function () {
 
     fixtures.zcash.valid.forEach(function (f) {
       it('Zcash imports ' + f.description, function () {
-        var block = Block.fromHex(f.hex, NETWORKS.zcashTest)
+        var block = Block.fromHex(f.hex, networks.zcashTest)
 
         assert.strictEqual(block.version, f.version)
         assert.strictEqual(block.prevHash.reverse().toString('hex'), f.prevHash)
@@ -97,7 +97,7 @@ describe('Block', function () {
       var block
 
       beforeEach(function () {
-        block = Block.fromHex(f.hex, NETWORKS.zcashTest)
+        block = Block.fromHex(f.hex, networks.zcashTest)
       })
 
       it('Zcash exports ' + f.description, function () {
@@ -125,7 +125,7 @@ describe('Block', function () {
       var block
 
       beforeEach(function () {
-        block = Block.fromHex(f.hex, NETWORKS.zcashTest)
+        block = Block.fromHex(f.hex, networks.zcashTest)
       })
 
       it('Zcash returns ' + f.id + ' for ' + f.description, function () {
@@ -154,7 +154,7 @@ describe('Block', function () {
       var block
 
       beforeEach(function () {
-        block = Block.fromHex(f.hex, NETWORKS.zcashTest)
+        block = Block.fromHex(f.hex, networks.zcashTest)
       })
 
       it('Zcash returns UTC date of ' + f.id, function () {
@@ -192,7 +192,7 @@ describe('Block', function () {
       var block
 
       beforeEach(function () {
-        block = Block.fromHex(f.hex, NETWORKS.zcashTest)
+        block = Block.fromHex(f.hex, networks.zcashTest)
       })
 
       it('Zcash returns ' + f.merkleRoot + ' for ' + f.id, function () {
@@ -222,7 +222,7 @@ describe('Block', function () {
       var block
 
       beforeEach(function () {
-        block = Block.fromHex(f.hex, NETWORKS.zcashTest)
+        block = Block.fromHex(f.hex, networks.zcashTest)
       })
 
       it('Zcash returns ' + f.valid + ' for ' + f.id, function () {
@@ -248,7 +248,7 @@ describe('Block', function () {
       var block
 
       beforeEach(function () {
-        block = Block.fromHex(f.hex, NETWORKS.zcashTest)
+        block = Block.fromHex(f.hex, networks.zcashTest)
       })
 
       it('Zcash returns ' + f.valid + ' for ' + f.id, function () {

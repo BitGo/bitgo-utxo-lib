@@ -5,7 +5,7 @@ var bscript = require('./script')
 var bufferutils = require('./bufferutils')
 import { Coins } from './coins';
 var opcodes = require('bitcoin-ops')
-var networks = require('./networks')
+import { networks } from '../src/networks'
 var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')

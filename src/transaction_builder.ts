@@ -4,7 +4,7 @@ var bcrypto = require('./crypto')
 var bscript = require('./script')
 var btemplates = require('./templates/index')
 var coins = require('./coins')
-var networks = require('./networks')
+import { networks } from '../src/networks'
 var ops = require('bitcoin-ops')
 var typeforce = require('typeforce')
 var types = require('./types')

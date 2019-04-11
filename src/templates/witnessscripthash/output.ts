@@ -14,8 +14,8 @@ function check (script) {
 }
 check.toJSON = function () { return 'Witness scriptHash output' }
 
-function encode (scriptHash) {
-  typeforce(types.Hash256bit, scriptHash)
+function encode (scriptHash: Buffer) {
+  // typeforce(types.Hash256bit, scriptHash)
 
   return bscript.compile([OPS.OP_0, scriptHash])
 }

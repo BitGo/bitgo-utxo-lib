@@ -3,7 +3,7 @@ var bech32 = require('bech32')
 var bs58check = require('bs58check')
 var bscript = require('./script')
 var btemplates = require('./templates/index')
-var networks = require('./networks')
+import { networks } from '../src/networks'
 var typeforce = require('typeforce')
 var types = require('./types')
 
@@ -34,8 +34,8 @@ function fromBech32 (address) {
   }
 }
 
-function toBase58Check (hash, version) {
-  typeforce(types.tuple(types.Hash160bit, types.UInt16), arguments)
+function toBase58Check (hash: Buffer, version: number) {
+  // typeforce(types.tuple(types.Hash160bit, types.UInt16), arguments)
 
   // Zcash adds an extra prefix resulting in a bigger (22 bytes) payload. We identify them Zcash by checking if the
   // version is multibyte (2 bytes instead of 1)
@@ -68,7 +68,7 @@ function fromOutputScript (outputScript, network) {
   throw new Error(bscript.toASM(outputScript) + ' has no matching Address')
 }
 
-function toOutputScript (address, network) {
+function toOutputScript (address, network?) {
   network = network || networks.bitcoin
 
   var decode

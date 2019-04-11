@@ -2,7 +2,7 @@
 
 var assert = require('assert')
 var baddress = require('../src/address')
-var networks = require('../src/networks')
+import { networks } from '../src/networks'
 var bscript = require('../src/script')
 var fixtures = require('./fixtures/address.json')
 

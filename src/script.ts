@@ -2,7 +2,6 @@ var Buffer = require('safe-buffer').Buffer
 var bip66 = require('bip66')
 var pushdata = require('pushdata-bitcoin')
 var typeforce = require('typeforce')
-var types = require('./types')
 var scriptNumber = require('./script_number')
 
 var OPS = require('bitcoin-ops')
@@ -10,18 +9,18 @@ var REVERSE_OPS = require('bitcoin-ops/map')
 var OP_INT_BASE = OPS.OP_RESERVED // OP_1 - 1
 
 function isOPInt (value) {
-  return types.Number(value) &&
+  return typeof value === "number" &&
     ((value === OPS.OP_0) ||
     (value >= OPS.OP_1 && value <= OPS.OP_16) ||
     (value === OPS.OP_1NEGATE))
 }
 
 function isPushOnlyChunk (value) {
-  return types.Buffer(value) || isOPInt(value)
+  return value instanceof Buffer || isOPInt(value)
 }
 
 function isPushOnly (value) {
-  return types.Array(value) && value.every(isPushOnlyChunk)
+  return value instanceof Array && value.every(isPushOnlyChunk)
 }
 
 function asMinimalOP (buffer) {
@@ -31,12 +30,7 @@ function asMinimalOP (buffer) {
   if (buffer[0] === 0x81) return OPS.OP_1NEGATE
 }
 
-function compile (chunks) {
-  // TODO: remove me
-  if (Buffer.isBuffer(chunks)) return chunks
-
-  typeforce(types.Array, chunks)
-
+function compile (chunks: Buffer[]) {
   var bufferSize = chunks.reduce(function (accum, chunk) {
     // data chunk
     if (Buffer.isBuffer(chunk)) {
@@ -81,12 +75,7 @@ function compile (chunks) {
   return buffer
 }
 
-function decompile (buffer) {
-  // TODO: remove me
-  if (types.Array(buffer)) return buffer
-
-  typeforce(types.Buffer, buffer)
-
+function decompile (buffer: Buffer) {
   var chunks = []
   var i = 0
 
@@ -146,13 +135,16 @@ function toASM (chunks) {
 
 function fromASM (asm: String) {
 
-  return compile(asm.split(' ').map(function (chunkStr) {
+  return compile(asm.split(' ').map(function (chunkStr: any) {
     // opcode?
-    if (OPS[chunkStr] !== undefined) return OPS[chunkStr]
-    typeforce(types.Hex, chunkStr)
-
-    // data!
-    return Buffer.from(chunkStr, 'hex')
+    if (OPS[chunkStr] !== undefined) {
+      return OPS[chunkStr];
+    }
+    if (typeof chunkStr === "number" || typeof chunkStr === "string") {
+      // data!
+      return Buffer.from(chunkStr, 'hex')
+    }
+    throw new Error(`Error! ${chunkStr}`);
   }))
 }
 
