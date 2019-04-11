@@ -6,7 +6,7 @@ var ecdsa = require('../src/ecdsa')
 var sinon = require('sinon')
 
 var BigInteger = require('bigi')
-var ECSignature = require('../src/ecsignature')
+import {ECSignature} from '../src/ecsignature'
 
 var curve = ecdsa.__curve
 

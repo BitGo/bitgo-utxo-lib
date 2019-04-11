@@ -15,10 +15,10 @@ var fastcurve = require('../src/fastcurve')
 var fixtures = require('./fixtures/ecpair.json')
 var curve = ecdsa.__curve
 
-var NETWORKS = require('../src/networks')
+import { networks } from '../src/networks'
 var NETWORKS_LIST = [] // Object.values(networks)
-for (var networkName in NETWORKS) {
-  NETWORKS_LIST.push(NETWORKS[networkName])
+for (var networkName in networks) {
+  NETWORKS_LIST.push(networks[networkName])
 }
 
 describe('ECPair', function () {
@@ -40,10 +40,10 @@ describe('ECPair', function () {
     it('supports the network option', function () {
       var keyPair = new ECPair(BigInteger.ONE, null, {
         compressed: false,
-        network: NETWORKS.testnet
+        network: networks.testnet
       })
 
-      assert.strictEqual(keyPair.network, NETWORKS.testnet)
+      assert.strictEqual(keyPair.network, networks.testnet)
     })
 
     fixtures.valid.forEach(function (f) {
@@ -112,7 +112,7 @@ describe('ECPair', function () {
   describe('fromWIF', function () {
     fixtures.valid.forEach(function (f) {
       it('imports ' + f.WIF + ' (' + f.network + ')', function () {
-        var network = NETWORKS[f.network]
+        var network = networks[f.network]
         var keyPair = ECPair.fromWIF(f.WIF, network)
 
         assert.strictEqual(keyPair.d.toString(), f.d)
@@ -127,16 +127,16 @@ describe('ECPair', function () {
 
         assert.strictEqual(keyPair.d.toString(), f.d)
         assert.strictEqual(keyPair.compressed, f.compressed)
-        assert.strictEqual(keyPair.network, NETWORKS[f.network])
+        assert.strictEqual(keyPair.network, networks[f.network])
       })
     })
 
     fixtures.invalid.fromWIF.forEach(function (f) {
       it('throws on ' + f.WIF, function () {
         assert.throws(function () {
-          var networks = f.network ? NETWORKS[f.network] : NETWORKS_LIST
+          var testNetworks = f.network ? networks[f.network] : NETWORKS_LIST
 
-          ECPair.fromWIF(f.WIF, networks)
+          ECPair.fromWIF(f.WIF, testNetworks)
         }, new RegExp(f.exception))
       })
     })
@@ -179,17 +179,17 @@ describe('ECPair', function () {
       var keyPair = ECPair.makeRandom()
 
       assert.strictEqual(keyPair.compressed, true)
-      assert.strictEqual(keyPair.network, NETWORKS.bitcoin)
+      assert.strictEqual(keyPair.network, networks.bitcoin)
     })
 
     it('supports the options parameter', function () {
       var keyPair = ECPair.makeRandom({
         compressed: false,
-        network: NETWORKS.testnet
+        network: networks.testnet
       })
 
       assert.strictEqual(keyPair.compressed, false)
-      assert.strictEqual(keyPair.network, NETWORKS.testnet)
+      assert.strictEqual(keyPair.network, networks.testnet)
     })
 
     it('loops until d is within interval [1, n - 1] : 1', sinon.test(function () {
@@ -225,7 +225,7 @@ describe('ECPair', function () {
   describe('getNetwork', function () {
     fixtures.valid.forEach(function (f) {
       it('returns ' + f.network + ' for ' + f.WIF, function () {
-        var network = NETWORKS[f.network]
+        var network = networks[f.network]
         var keyPair = ECPair.fromWIF(f.WIF, NETWORKS_LIST)
 
         assert.strictEqual(keyPair.getNetwork(), network)

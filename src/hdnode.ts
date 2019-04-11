@@ -4,7 +4,7 @@ var Buffer = require('safe-buffer').Buffer
 var base58check = require('bs58check')
 var bcrypto = require('./crypto')
 var createHmac = require('create-hmac')
-var NETWORKS = require('./networks')
+import { networks } from '../src/networks'
 
 var BigInteger = require('bigi')
 var ECPair = require('./ecpair')
@@ -74,7 +74,7 @@ HDNode.fromBase58 = function (string, networks) {
 
   // otherwise, assume a network object (or default to bitcoin)
   } else {
-    network = networks || NETWORKS.bitcoin
+    network = networks || networks.bitcoin
   }
 
   if (version !== network.bip32.private &&

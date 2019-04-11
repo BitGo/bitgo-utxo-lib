@@ -3,7 +3,7 @@
 var assert = require('assert')
 
 var BigInteger = require('bigi')
-var ECSignature = require('../src/ecsignature')
+import {ECSignature} from '../src/ecsignature'
 
 var fixtures = require('./fixtures/ecsignature.json')
 
