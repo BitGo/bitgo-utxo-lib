@@ -18,10 +18,10 @@
     "coverage-report": "nyc report --reporter=lcov",
     "coverage-html": "nyc report --reporter=html",
     "coverage": "nyc --check-coverage --branches 90 --functions 90 mocha",
-    "integration": "mocha test/integration/",
-    "unit": "mocha",
-    "mocha": "mocha test/ --compilers ts:ts-node/register --recursive",
+    "integration": "mocha --require ts-node/register \"test/integration/*.ts\"",
+    "unit": "mocha --require ts-node/register \"test/*.ts\"",
     "build": "tsc --project tsconfig.build.json",
+    "postinstall": "npm run build",
     "test": "mocha --require ts-node/register \"test/**/*.ts\""
   },
   "repository": {

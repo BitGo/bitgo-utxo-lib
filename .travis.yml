@@ -13,4 +13,4 @@ matrix:
 env:
   - TEST_SUITE=integration
   - TEST_SUITE=unit
-script: npm run-script $TEST_SUITE
+script: npm test
