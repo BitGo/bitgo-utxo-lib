@@ -5,9 +5,9 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we evolved this library to support the transaction building process of different UTXO based coins.
+Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we evolved this library to support the transaction building process of different UTXO based TickerSymbol.
 
-## Supported coins
+## Supported TickerSymbol
 - Bitcoin
 - Bitcoin Cash
 - Bitcoin Gold
@@ -45,7 +45,7 @@ These steps are advisory only,  and may not be suitable for your application.
 
 [Browserify](https://github.com/substack/node-browserify) is assumed to be installed for these steps.
 
-For your project, create an `index.js` file
+For your project, create an `index.ts` file
 ``` javascript
 let bitGoUTXO = require('bitgo-utxo-lib')
 
@@ -61,7 +61,7 @@ module.exports = {
 
 Now, to compile for the browser:
 ``` bash
-browserify index.js --standalone foo > app.js
+browserify index.ts --standalone foo > app.js
 ```
 
 You can now put `<script src="app.js" />` in your web page,  using `foo.myFunction` to create a new Bitcoin private key.

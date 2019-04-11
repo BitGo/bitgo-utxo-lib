@@ -1,0 +1,3 @@
+export = {
+  output: require('./output')
+}
