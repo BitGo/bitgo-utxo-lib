@@ -1,4 +1,6 @@
-var bitcoin = require('../../')
+import {networks} from './../../src/networks'
+var ECPair = require('./../../src/ecpair')
+
 var dhttp = require('dhttp/200')
 
 var APIPASS = process.env.APIPASS || 'satoshi'
@@ -67,8 +69,8 @@ function verify (txo, callback) {
 }
 
 function randomAddress () {
-  return bitcoin.ECPair.makeRandom({
-    network: bitcoin.networks.testnet
+  return ECPair.makeRandom({
+    network: networks.testnet
   }).getAddress()
 }
 
@@ -78,7 +80,7 @@ export = {
   fetch: fetch,
   height: height,
   mine: mine,
-  network: bitcoin.networks.testnet,
+  network: networks.testnet,
   unspents: unspents,
   verify: verify,
   randomAddress: randomAddress,

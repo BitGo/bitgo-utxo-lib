@@ -3,10 +3,12 @@
 var assert = require('assert')
 var base58 = require('bs58')
 var bitcoin = require('./../src/')
+import {networks} from '../src/networks'
+import {ECSignature} from '../src/ECSignature'
 
 var base58EncodeDecode = require('./fixtures/core/base58_encode_decode.json')
 var base58KeysInvalid = require('./fixtures/core/base58_keys_invalid.json')
-var base58KeysValid = require('./fixtures/core/base58_keys_valid.json')
+var base58KeysValid:any = require('./fixtures/core/base58_keys_valid.json')
 var blocksValid = require('./fixtures/core/blocks.json')
 var sigCanonical = require('./fixtures/core/sig_canonical.json')
 var sigHash = require('./fixtures/core/sighash.json')
@@ -50,7 +52,7 @@ describe('Bitcoin-core', function () {
 
       if (params.isPrivkey) return
 
-      var network = params.isTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
+      var network = params.isTestnet ? networks.testnet : networks.bitcoin
       var version = network[typeMap[params.addrType]]
 
       it('can export ' + expected, function () {
@@ -62,10 +64,10 @@ describe('Bitcoin-core', function () {
   // base58KeysInvalid
   describe('address.fromBase58Check', function () {
     var allowedNetworks = [
-      bitcoin.networks.bitcoin.pubkeyhash,
-      bitcoin.networks.bitcoin.scripthash,
-      bitcoin.networks.testnet.pubkeyhash,
-      bitcoin.networks.testnet.scripthash
+      networks.bitcoin.pubKeyHash,
+      networks.bitcoin.scriptHash,
+      networks.testnet.pubKeyHash,
+      networks.testnet.scriptHash
     ]
 
     base58KeysInvalid.forEach(function (f) {
@@ -90,7 +92,7 @@ describe('Bitcoin-core', function () {
 
       if (!params.isPrivkey) return
 
-      var network = params.isTestnet ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
+      var network = params.isTestnet ? networks.testnet : networks.bitcoin
       var keyPair = bitcoin.ECPair.fromWIF(string, network)
 
       it('fromWIF imports ' + string, function () {
@@ -107,8 +109,8 @@ describe('Bitcoin-core', function () {
   // base58KeysInvalid
   describe('ECPair.fromWIF', function () {
     var allowedNetworks = [
-      bitcoin.networks.bitcoin,
-      bitcoin.networks.testnet
+      networks.bitcoin,
+      networks.testnet
     ]
 
     base58KeysInvalid.forEach(function (f) {
@@ -203,7 +205,7 @@ describe('Bitcoin-core', function () {
       var buffer = Buffer.from(hex, 'hex')
 
       it('can parse ' + hex, function () {
-        var parsed = bitcoin.ECSignature.parseScriptSignature(buffer)
+        var parsed = ECSignature.parseScriptSignature(buffer)
         var actual = parsed.signature.toScriptSignature(parsed.hashType)
         assert.strictEqual(actual.toString('hex'), hex)
       })
@@ -218,7 +220,7 @@ describe('Bitcoin-core', function () {
 
       it('throws on ' + description, function () {
         assert.throws(function () {
-          bitcoin.ECSignature.parseScriptSignature(buffer)
+          ECSignature.parseScriptSignature(buffer)
         }, /Expected DER (integer|sequence)|(R|S) value (excessively padded|is negative)|(R|S|DER sequence) length is (zero|too short|too long|invalid)|Invalid hashType/)
       })
     })

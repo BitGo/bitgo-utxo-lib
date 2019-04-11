@@ -2,7 +2,7 @@
 
 var assert = require('assert')
 var bigi = require('bigi')
-var bitcoin = require('../../')
+var bitcoin = require('./../../src/')
 
 var ecurve = require('ecurve')
 var secp256k1 = ecurve.getCurveByName('secp256k1')

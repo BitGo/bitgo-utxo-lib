@@ -2,7 +2,7 @@
 
 var assert = require('assert')
 var bigi = require('bigi')
-var bitcoin = require('../../')
+var bitcoin = require('./../../src/')
 var dhttp = require('dhttp/200')
 
 // deterministic RNG for testing only

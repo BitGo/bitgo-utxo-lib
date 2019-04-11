@@ -22,7 +22,7 @@
     "unit": "mocha",
     "mocha": "mocha test/ --compilers ts:ts-node/register --recursive",
     "build": "tsc --project tsconfig.build.json",
-    "test": "npm run coverage"
+    "test": "mocha --require ts-node/register \"test/**/*.ts\""
   },
   "repository": {
     "type": "git",

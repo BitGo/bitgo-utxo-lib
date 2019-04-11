@@ -1,7 +1,7 @@
 /* global describe, it */
 
 var assert = require('assert')
-var bitcoin = require('../../')
+var bitcoin = require('./../../src/')
 var regtestUtils = require('./_regtest')
 var regtest = regtestUtils.network
 var bip65 = require('bip65')

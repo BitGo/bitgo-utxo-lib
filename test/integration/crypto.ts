@@ -2,7 +2,7 @@
 
 var assert = require('assert')
 var bigi = require('bigi')
-var bitcoin = require('../../')
+var bitcoin = require('./../../src/')
 import crypto = require('crypto')
 
 var ecurve = require('ecurve')
