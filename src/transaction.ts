@@ -350,8 +350,8 @@ Transaction.fromHex = function (hex, network) {
     return Transaction.fromBuffer(Buffer.from(hex, 'hex'), network)
 }
 
-Transaction.isCoinbaseHash = function (buffer) {
-    typeforce(types.Hash256bit, buffer)
+Transaction.isCoinbaseHash = function (buffer: Buffer) {
+    // typeforce(types.Hash256bit, buffer)
     for (var i = 0; i < 32; ++i) {
         if (buffer[i] !== 0) return false
     }
@@ -374,15 +374,15 @@ Transaction.prototype.isCoinbase = function () {
     return this.ins.length === 1 && Transaction.isCoinbaseHash(this.ins[0].hash)
 }
 
-Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
-    typeforce(types.tuple(
-        types.Hash256bit,
-        types.UInt32,
-        types.maybe(types.UInt32),
-        types.maybe(types.Buffer)
-    ), arguments)
+Transaction.prototype.addInput = function (hash: Buffer, index: number, sequence?: number, scriptSig?: Buffer) {
+    // typeforce(types.tuple(
+    //     types.Hash256bit,
+    //     types.UInt32,
+    //     types.maybe(types.UInt32),
+    //     types.maybe(types.Buffer)
+    // ), arguments)
 
-    if (types.Null(sequence)) {
+    if (!sequence) {
         sequence = Transaction.DEFAULT_SEQUENCE
     }
 
@@ -396,8 +396,8 @@ Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
     }) - 1)
 }
 
-Transaction.prototype.addOutput = function (scriptPubKey, value) {
-    typeforce(types.tuple(types.Buffer, types.Satoshi), arguments)
+Transaction.prototype.addOutput = function (scriptPubKey: Buffer, value: number) {
+    // typeforce(types.tuple(types.Buffer, types.Satoshi), arguments)
 
     // Add the output and return the output's index
     return (this.outs.push({

@@ -8,8 +8,8 @@ var p2ms = require('../multisig/')
 var p2pk = require('../pubkey/')
 var p2pkh = require('../pubkeyhash/')
 
-function check (chunks, allowIncomplete) {
-  typeforce(types.Array, chunks)
+function check (chunks: Buffer, allowIncomplete: boolean) {
+  // typeforce(types.Array, chunks)
   if (chunks.length < 1) return false
 
   var witnessScript = chunks[chunks.length - 1]

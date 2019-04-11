@@ -1,18 +1,16 @@
 // m [pubKeys ...] n OP_CHECKMULTISIG
 
 var bscript = require('../../script')
-var types = require('../../types')
-var typeforce = require('typeforce')
 var OPS = require('bitcoin-ops')
 var OP_INT_BASE = OPS.OP_RESERVED // OP_1 - 1
 
-function check (script, allowIncomplete) {
+function check (script, allowIncomplete: boolean) {
   var chunks = bscript.decompile(script)
 
   if (chunks.length < 4) return false
-  if (chunks[chunks.length - 1] !== OPS.OP_CHECKMULTISIG) return false
-  if (!types.Number(chunks[0])) return false
-  if (!types.Number(chunks[chunks.length - 2])) return false
+  if (chunks[chunks.length - 1] !== OPS.OP_CHECKMULTISIG) return false;
+  if (typeof chunks[0] !== 'number') return false;
+  if (typeof chunks[chunks.length - 2] !== 'number') return false;
   var m = chunks[0] - OP_INT_BASE
   var n = chunks[chunks.length - 2] - OP_INT_BASE
 
@@ -27,14 +25,14 @@ function check (script, allowIncomplete) {
 }
 check.toJSON = function () { return 'multi-sig output' }
 
-function encode (m, pubKeys) {
-  typeforce({
-    m: types.Number,
-    pubKeys: [bscript.isCanonicalPubKey]
-  }, {
-    m: m,
-    pubKeys: pubKeys
-  })
+function encode (m: number, pubKeys: any) {
+  // typeforce({
+  //   m: types.Number,
+  //   pubKeys: [bscript.isCanonicalPubKey]
+  // }, {
+  //   m: m,
+  //   pubKeys: pubKeys
+  // })
 
   var n = pubKeys.length
   if (n < m) throw new TypeError('Not enough pubKeys provided')
@@ -47,9 +45,11 @@ function encode (m, pubKeys) {
   ))
 }
 
-function decode (buffer, allowIncomplete) {
-  var chunks = bscript.decompile(buffer)
-  typeforce(check, chunks, allowIncomplete)
+function decode (buffer: Buffer, allowIncomplete?: boolean) {
+  var chunks = bscript.decompile(buffer);
+  if (!check(chunks, allowIncomplete)) {
+    throw Error('Check failed')
+  }
 
   return {
     m: chunks[0] - OP_INT_BASE,

@@ -3,12 +3,12 @@
 var assert = require('assert')
 var bscript = require('../src/script')
 var ECPair = require('../src/ecpair')
-var NETWORKS = require('../src/networks')
+import { networks } from '../src/networks'
 var TransactionBuilder = require('../src/transaction_builder')
 var Transaction = require('../src/transaction')
 
 describe('TransactionBuilder', function () {
-  var network = NETWORKS['bitcoincash']
+  var network = networks['bitcoincash']
   xit('cashtestcase3', function () {
     var value = 50 * 1e8
     var txid = '40c8a218923f23df3692530fa8e475251c50c7d630dccbdfbd92ba8092f4aa13'

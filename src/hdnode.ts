@@ -1,9 +1,9 @@
+import {Network} from "./networks";
+
 var Buffer = require('safe-buffer').Buffer
 var base58check = require('bs58check')
 var bcrypto = require('./crypto')
 var createHmac = require('create-hmac')
-var typeforce = require('typeforce')
-var types = require('./types')
 var NETWORKS = require('./networks')
 
 var BigInteger = require('bigi')
@@ -14,8 +14,8 @@ var curve = ecurve.getCurveByName('secp256k1')
 
 var fastcurve = require('./fastcurve')
 
-function HDNode (keyPair, chainCode) {
-  typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
+function HDNode (keyPair: any, chainCode: Buffer) {
+  // typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
 
   if (!keyPair.compressed) throw new TypeError('BIP32 only allows compressed keyPairs')
 
@@ -31,8 +31,8 @@ HDNode.HIGHEST_BIT = 0x80000000
 HDNode.LENGTH = 78
 HDNode.MASTER_SECRET = Buffer.from('Bitcoin seed', 'utf8')
 
-HDNode.fromSeedBuffer = function (seed, network) {
-  typeforce(types.tuple(types.Buffer, types.maybe(types.Network)), arguments)
+HDNode.fromSeedBuffer = function (seed: Buffer, network: Network) {
+  // typeforce(types.tuple(types.Buffer, types.maybe(types.Network)), arguments)
 
   if (seed.length < 16) throw new TypeError('Seed should be at least 128 bits')
   if (seed.length > 64) throw new TypeError('Seed should be at most 512 bits')
@@ -206,8 +206,8 @@ HDNode.prototype.toBase58 = function (__isPrivate) {
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-ckd-functions
-HDNode.prototype.derive = function (index) {
-  typeforce(types.UInt32, index)
+HDNode.prototype.derive = function (index: number) {
+  // typeforce(types.UInt32, index)
 
   var isHardened = index >= HDNode.HIGHEST_BIT
   var data = Buffer.allocUnsafe(37)
@@ -282,8 +282,8 @@ HDNode.prototype.derive = function (index) {
   return hd
 }
 
-HDNode.prototype.deriveHardened = function (index) {
-  typeforce(types.UInt31, index)
+HDNode.prototype.deriveHardened = function (index: number) {
+  // typeforce(types.UInt31, index)
 
   // Only derives hardened private keys by default
   return this.derive(index + HDNode.HIGHEST_BIT)
@@ -295,9 +295,9 @@ HDNode.prototype.isNeutered = function () {
   return !(this.keyPair.d)
 }
 
-HDNode.prototype.derivePath = function (path, cache) {
-  typeforce(types.BIP32Path, path)
-  typeforce(types.maybe(types.Object), cache)
+HDNode.prototype.derivePath = function (path: string, cache: any) {
+  // typeforce(types.BIP32Path, path)
+  // typeforce(types.maybe(types.Object), cache)
 
   cache = cache || this.derivationCache
 

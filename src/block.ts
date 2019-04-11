@@ -1,8 +1,6 @@
 var Buffer = require('safe-buffer').Buffer
 var bcrypto = require('./crypto')
 var fastMerkleRoot = require('merkle-lib/fastRoot')
-var typeforce = require('typeforce')
-var types = require('./types')
 var varuint = require('varuint-bitcoin')
 import {Network, networks} from '../src/networks'
 import {Coins} from './coins'

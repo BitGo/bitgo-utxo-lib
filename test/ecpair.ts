@@ -16,7 +16,7 @@ var fixtures = require('./fixtures/ecpair.json')
 var curve = ecdsa.__curve
 
 var NETWORKS = require('../src/networks')
-var NETWORKS_LIST = [] // Object.values(NETWORKS)
+var NETWORKS_LIST = [] // Object.values(networks)
 for (var networkName in NETWORKS) {
   NETWORKS_LIST.push(NETWORKS[networkName])
 }

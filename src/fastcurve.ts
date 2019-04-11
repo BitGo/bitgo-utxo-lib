@@ -1,7 +1,4 @@
-var typeforce = require('typeforce')
-
-var ECSignature = require('./ecsignature')
-var types = require('./types')
+import {ECSignature} from './ecsignature'
 
 var secp256k1
 var available = false
@@ -25,8 +22,8 @@ try {
  * @param compressed {Boolean} Whether the public key should be compressed
  * @return {undefined}
  */
-var publicKeyCreate = function (buffer, compressed) {
-  typeforce(types.tuple(types.Buffer256bit, types.Boolean), arguments)
+var publicKeyCreate = function (buffer: Buffer, compressed: boolean) {
+  // typeforce(types.tuple(types.Buffer256bit, types.Boolean), arguments)
 
   if (!available) {
     return undefined
@@ -45,8 +42,8 @@ var publicKeyCreate = function (buffer, compressed) {
  * @param d {BigInteger} private key which is to be used for signing
  * @return {ECSignature}
  */
-var sign = function (hash, d) {
-  typeforce(types.tuple(types.Buffer256bit, types.BigInt), arguments)
+var sign = function (hash: Buffer, d: any) {
+  // typeforce(types.tuple(types.Buffer256bit, types.BigInt), arguments)
 
   if (!available) {
     return undefined
@@ -67,13 +64,13 @@ var sign = function (hash, d) {
  * @param pubkey {Buffer} public key which will be used to verify the message signature
  * @return {Boolean}
  */
-var verify = function (hash, sig, pubkey) {
-  typeforce(types.tuple(
-    types.Hash256bit,
-    types.ECSignature,
-    // both compressed and uncompressed public keys are fine
-    types.oneOf(types.BufferN(33), types.BufferN(65))),
-    arguments)
+var verify = function (hash: Buffer, sig: any, pubkey: Buffer) {
+  // typeforce(types.tuple(
+  //   types.Hash256bit,
+  //   types.ECSignature,
+  //   // both compressed and uncompressed public keys are fine
+  //   types.oneOf(types.BufferN(33), types.BufferN(65))),
+  //   arguments)
 
   if (!available) {
     return undefined

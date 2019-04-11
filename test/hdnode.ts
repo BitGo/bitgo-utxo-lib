@@ -12,10 +12,10 @@ var HDNode = require('../src/hdnode')
 var fixtures = require('./fixtures/hdnode.json')
 var curve = ecdsa.__curve
 
-var NETWORKS = require('../src/networks')
-var NETWORKS_LIST = [] // Object.values(NETWORKS)
-for (var networkName in NETWORKS) {
-  NETWORKS_LIST.push(NETWORKS[networkName])
+import { networks } from '../src/networks'
+var NETWORKS_LIST = [] // Object.values(networks)
+for (var networkName in networks) {
+  NETWORKS_LIST.push(networks[networkName])
 }
 
 var validAll = []
@@ -71,7 +71,7 @@ describe('HDNode', function () {
   describe('fromSeed*', function () {
     fixtures.valid.forEach(function (f) {
       it('calculates privKey and chainCode for ' + f.master.fingerprint, function () {
-        var network = NETWORKS[f.network]
+        var network = networks[f.network]
         var hd = HDNode.fromSeedHex(f.master.seed, network)
 
         assert.strictEqual(hd.keyPair.toWIF(), f.master.wif)
@@ -195,9 +195,9 @@ describe('HDNode', function () {
     fixtures.invalid.fromBase58.forEach(function (f) {
       it('throws on ' + f.string, function () {
         assert.throws(function () {
-          var networks = f.network ? NETWORKS[f.network] : NETWORKS_LIST
+          var testNetworks = f.network ? networks[f.network] : NETWORKS_LIST
 
-          HDNode.fromBase58(f.string, networks)
+          HDNode.fromBase58(f.string, testNetworks)
         }, new RegExp(f.exception))
       })
     })
@@ -264,7 +264,7 @@ describe('HDNode', function () {
     }
 
     fixtures.valid.forEach(function (f) {
-      var network = NETWORKS[f.network]
+      var network = networks[f.network]
       var hd = HDNode.fromSeedHex(f.master.seed, network)
       var master = hd
 

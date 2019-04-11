@@ -2,11 +2,9 @@ var baddress = require('./address')
 var bcrypto = require('./crypto')
 var ecdsa = require('./ecdsa')
 var randomBytes = require('randombytes')
-var typeforce = require('typeforce')
-var types = require('./types')
 var wif = require('wif')
 
-var NETWORKS = require('./networks')
+import {Network, networks} from '../src/networks'
 var BigInteger = require('bigi')
 
 var ecurve = require('ecurve')
@@ -15,20 +13,18 @@ var secp256k1 = ecdsa.__curve
 
 var fastcurve = require('./fastcurve')
 
+interface Options {
+  compressed?: boolean,
+  network?: Network
+}
+
 interface Function {
     fromPrivateKeyBuffer: any;
     fromWIF: any;
     makeRandom: any;
 }
 
-function ECPair (d, Q?, options?) {
-  if (options) {
-    typeforce({
-      compressed: types.maybe(types.Boolean),
-      network: types.maybe(types.Network)
-    }, options)
-  }
-
+function ECPair (d, Q?:any, options?: Options) {
   options = options || {}
 
   if (d) {
@@ -38,13 +34,13 @@ function ECPair (d, Q?, options?) {
 
     this.d = d
   } else {
-    typeforce(types.ECPoint, Q)
+    // typeforce(types.ECPoint, Q)
 
     this.__Q = Q
   }
 
   this.compressed = options.compressed === undefined ? true : options.compressed
-  this.network = options.network || NETWORKS.bitcoin
+  this.network = options.network || networks.bitcoin
 }
 
 Object.defineProperty(ECPair.prototype, 'Q', {
@@ -96,7 +92,7 @@ ECPair.fromWIF = function (string, network?) {
   var version = decoded.version
 
   // list of networks?
-  if (types.Array(network)) {
+  if (network instanceof Array) {
     network = network.filter(function (x) {
       return version === x.wif
     }).pop()  // We should not use pop since it depends on the order of the networks for the same wif
@@ -105,7 +101,7 @@ ECPair.fromWIF = function (string, network?) {
 
   // otherwise, assume a network object (or default to bitcoin)
   } else {
-    network = network || NETWORKS.bitcoin
+    network = network || networks.bitcoin
 
     if (version !== network.wif) throw new Error('Invalid network version')
   }
@@ -125,8 +121,8 @@ ECPair.makeRandom = function (options?) {
 
   var d
   do {
-    var buffer = rng(32)
-    typeforce(types.Buffer256bit, buffer)
+    var buffer: Buffer = rng(32)
+    // typeforce(types.Buffer256bit, buffer)
 
     d = BigInteger.fromBuffer(buffer)
   } while (d.signum() <= 0 || d.compareTo(secp256k1.n) >= 0)
@@ -184,4 +180,4 @@ ECPair.prototype.verify = function (hash, signature) {
   return ecdsa.verify(hash, signature, this.Q)
 }
 
-module.exports = ECPair
+export = ECPair

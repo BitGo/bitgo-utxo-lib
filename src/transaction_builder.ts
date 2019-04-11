@@ -3,8 +3,8 @@ var baddress = require('./address')
 var bcrypto = require('./crypto')
 var bscript = require('./script')
 var btemplates = require('./templates/index')
-var coins = require('./coins')
-import { networks } from '../src/networks'
+import {Coins} from './coins'
+import { networks, TickerSymbol } from './networks'
 var ops = require('bitcoin-ops')
 var typeforce = require('typeforce')
 var types = require('./types')
@@ -201,14 +201,14 @@ function fixMultisigOrder (input, transaction, vin, value, network) {
       var parsed = ECSignature.parseScriptSignature(signature)
       var hash
       switch (network.coin) {
-        case coins.BSV:
-        case coins.BCH:
+        case TickerSymbol.BSV:
+        case TickerSymbol.BCH:
           hash = transaction.hashForCashSignature(vin, input.signScript, value, parsed.hashType)
           break
-        case coins.BTG:
+        case TickerSymbol.BTG:
           hash = transaction.hashForGoldSignature(vin, input.signScript, value, parsed.hashType)
           break
-        case coins.ZEC:
+        case TickerSymbol.ZEC:
           if (value === undefined) {
             return false
           }
@@ -505,8 +505,8 @@ function TransactionBuilder (network?, maximumFeeRate?) {
   this.tx = new Transaction(this.network)
 }
 
-TransactionBuilder.prototype.setLockTime = function (locktime) {
-  typeforce(types.UInt32, locktime)
+TransactionBuilder.prototype.setLockTime = function (locktime: number) {
+  // typeforce(types.UInt32, locktime)
 
   // if any signatures exist, throw
   if (this.inputs.some(function (input) {
@@ -520,10 +520,9 @@ TransactionBuilder.prototype.setLockTime = function (locktime) {
   this.tx.locktime = locktime
 }
 
-TransactionBuilder.prototype.setVersion = function (version, overwinter = true) {
-  typeforce(types.UInt32, version)
-
-  if (coins.isZcash(this.network)) {
+TransactionBuilder.prototype.setVersion = function (version: number, overwinter: boolean = true) {
+  // typeforce(types.UInt32, version)
+  if (Coins.isZcash(this.network)) {
     if (!this.network.consensusBranchId.hasOwnProperty(this.tx.version)) {
       throw new Error('Unsupported Zcash transaction')
     }
@@ -533,7 +532,7 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
 }
 
 TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
-  if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
+  if (!(Coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -542,7 +541,7 @@ TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
 }
 
 TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
-  if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
+  if (!(Coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -551,7 +550,7 @@ TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
 }
 
 TransactionBuilder.prototype.setJoinSplits = function (transaction) {
-  if (!(coins.isZcash(this.network) && this.tx.supportsJoinSplits())) {
+  if (!(Coins.isZcash(this.network) && this.tx.supportsJoinSplits())) {
     throw new Error('joinsplits can only be set for Zcash starting at version 2. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -590,7 +589,7 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
   txb.setVersion(transaction.version, transaction.overwintered)
   txb.setLockTime(transaction.locktime)
 
-  if (coins.isZcash(txbNetwork)) {
+  if (Coins.isZcash(txbNetwork)) {
     // Copy Zcash overwinter fields. If the transaction builder is not for Zcash, they will be omitted
     if (txb.tx.isOverwinterCompatible()) {
       txb.setVersionGroupId(transaction.versionGroupId)
@@ -799,13 +798,13 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
 
   // ready to sign
   var signatureHash
-  if (coins.isBitcoinGold(this.network)) {
+  if (Coins.isBitcoinGold(this.network)) {
     signatureHash = this.tx.hashForGoldSignature(vin, input.signScript, witnessValue, hashType, input.witness)
     debug('Calculated BTG sighash (%s)', signatureHash.toString('hex'))
-  } else if (coins.isBitcoinCash(this.network) || coins.isBitcoinSV(this.network)) {
+  } else if (Coins.isBitcoinCash(this.network) || Coins.isBitcoinSV(this.network)) {
     signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
     debug('Calculated BCH sighash (%s)', signatureHash.toString('hex'))
-  } else if (coins.isZcash(this.network)) {
+  } else if (Coins.isZcash(this.network)) {
     signatureHash = this.tx.hashForZcashSignature(vin, input.signScript, witnessValue, hashType)
     debug('Calculated ZEC sighash (%s)', signatureHash.toString('hex'))
   } else {
@@ -893,6 +892,4 @@ TransactionBuilder.prototype.__overMaximumFees = function (bytes) {
   return feeRate > this.maximumFeeRate
 }
 
-module.exports = TransactionBuilder
-
-export {}
+export = TransactionBuilder
