@@ -1,10 +1,10 @@
 /* global describe, it, beforeEach */
 
 var assert = require('assert')
-var bscript = require('../built/script')
-var networks = require('../built/networks').networks
+var bscript = require('../src/script')
+import { networks } from '../src/networks'
 var fixtures = require('./fixtures/transaction')
-var Transaction = require('../built/transaction')
+var Transaction = require('../src/transaction')
 
 describe('Transaction', function () {
   function fromRaw (raw, noWitness?) {

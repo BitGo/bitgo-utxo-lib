@@ -1,14 +1,12 @@
 // <scriptSig> {serialized scriptPubKey script}
 
 var bscript = require('../../script')
-var types = require('../../types')
-var typeforce = require('typeforce')
 
 var p2ms = require('../multisig/')
 var p2pk = require('../pubkey/')
 var p2pkh = require('../pubkeyhash/')
 
-function check (chunks: Buffer, allowIncomplete: boolean) {
+function check (chunks: Buffer, allowIncomplete: boolean = true) {
   // typeforce(types.Array, chunks)
   if (chunks.length < 1) return false
 
@@ -36,20 +34,22 @@ function check (chunks: Buffer, allowIncomplete: boolean) {
 }
 check.toJSON = function () { return 'witnessScriptHash input' }
 
-function encodeStack (witnessData, witnessScript) {
-  typeforce({
-    witnessData: [types.Buffer],
-    witnessScript: types.Buffer
-  }, {
-    witnessData: witnessData,
-    witnessScript: witnessScript
-  })
+function encodeStack (witnessData: Buffer, witnessScript: Buffer) {
+  // typeforce({
+  //   witnessData: [types.Buffer],
+  //   witnessScript: types.Buffer
+  // }, {
+  //   witnessData: witnessData,
+  //   witnessScript: witnessScript
+  // })
 
   return [].concat(witnessData, witnessScript)
 }
 
 function decodeStack (chunks) {
-  typeforce(check, chunks)
+  if (!check(chunks)) {
+    throw Error('Check failed');
+  }
   return {
     witnessData: chunks.slice(0, -1),
     witnessScript: chunks[chunks.length - 1]

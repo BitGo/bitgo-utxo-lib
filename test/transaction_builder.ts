@@ -2,7 +2,7 @@
 
 var assert = require('assert')
 var baddress = require('../src/address')
-var coins = require('../src/coins')
+import {Coins} from '../src/coins'
 var bscript = require('../src/script')
 var btemplates = require('../src/templates/index')
 var ops = require('bitcoin-ops')
@@ -11,12 +11,12 @@ var BigInteger = require('bigi')
 var ECPair = require('../src/ecpair')
 var Transaction = require('../src/transaction')
 var TransactionBuilder = require('../src/transaction_builder')
-var NETWORKS = require('../src/networks')
+import { networks } from '../src/networks'
 
 var fixtures = require('./fixtures/transaction_builder')
 
 function construct (f, dontSign?) {
-  var network = NETWORKS[f.network]
+  var network = networks[f.network]
   var txb = new TransactionBuilder(network)
 
   if (f.version !== undefined) txb.setVersion(f.version)
@@ -98,7 +98,7 @@ describe('TransactionBuilder', function () {
   describe('fromTransaction', function () {
     fixtures.valid.build.forEach(function (f) {
       it('returns TransactionBuilder, with ' + f.description, function () {
-        var network = NETWORKS[f.network || 'bitcoin']
+        var network = networks[f.network || 'bitcoin']
 
         var tx = Transaction.fromHex(f.txHex, network)
         var txb = TransactionBuilder.fromTransaction(tx, network)
@@ -138,7 +138,7 @@ describe('TransactionBuilder', function () {
 
     fixtures.zcash.valid.forEach(function (testData) {
       it('returns TransactionBuilder, with ' + testData.description, function () {
-        var network = NETWORKS['zcash']
+        var network = networks['zcash']
         var tx = Transaction.fromHex(testData.hex, network)
         var txb = TransactionBuilder.fromTransaction(tx, network)
 
@@ -156,7 +156,7 @@ describe('TransactionBuilder', function () {
 
       it('throws if transaction builder network is incompatible for ' + testData.description, function () {
         var errorMessage = 'This transaction is incompatible with the transaction builder'
-        var tx = Transaction.fromHex(testData.hex, NETWORKS.zcash)
+        var tx = Transaction.fromHex(testData.hex, networks.zcash)
 
         // Zcash transaction but different network
         assert.throws(function () {
@@ -164,27 +164,27 @@ describe('TransactionBuilder', function () {
         }, new RegExp(errorMessage))
 
         assert.throws(function () {
-          TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoincash)
+          TransactionBuilder.fromTransaction(tx, networks.bitcoincash)
         }, new RegExp(errorMessage))
 
         assert.throws(function () {
-          TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoinsv)
+          TransactionBuilder.fromTransaction(tx, networks.bitcoinsv)
         }, new RegExp(errorMessage))
 
         assert.throws(function () {
-          TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoingold)
+          TransactionBuilder.fromTransaction(tx, networks.bitcoingold)
         }, new RegExp(errorMessage))
 
         assert.throws(function () {
-          TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoin)
+          TransactionBuilder.fromTransaction(tx, networks.bitcoin)
         }, new RegExp(errorMessage))
 
         assert.throws(function () {
-          TransactionBuilder.fromTransaction(tx, NETWORKS.litecoin)
+          TransactionBuilder.fromTransaction(tx, networks.litecoin)
         }, new RegExp(errorMessage))
 
         assert.throws(function () {
-          TransactionBuilder.fromTransaction(tx, NETWORKS.testnet)
+          TransactionBuilder.fromTransaction(tx, networks.testnet)
         }, new RegExp(errorMessage))
       })
     })
@@ -213,12 +213,12 @@ describe('TransactionBuilder', function () {
   var networksToTest = ['bitcoin', 'bitcoincash', 'bitcoingold', 'bitcoinsv', 'dash', 'litecoin', 'zcash']
   networksToTest.forEach(function (network) {
     describe('addInput for ' + network, function () {
-      var testNetwork = NETWORKS[network]
+      var testNetwork = networks[network]
       var txb
       var testKeyPair = new ECPair(BigInteger.ONE, undefined, { network: testNetwork })
       beforeEach(function () {
         txb = new TransactionBuilder(testNetwork)
-        if (coins.isZcash(testNetwork)) {
+        if (Coins.isZcash(testNetwork)) {
           txb.setVersion(3)
         }
       })
@@ -278,12 +278,12 @@ describe('TransactionBuilder', function () {
 
   networksToTest.forEach(function (network) {
     describe('addOutput for ' + network, function () {
-      var testNetwork = NETWORKS[network]
+      var testNetwork = networks[network]
       var txb
       var testKeyPair = new ECPair(BigInteger.ONE, undefined, { network: testNetwork })
       beforeEach(function () {
         txb = new TransactionBuilder(testNetwork)
-        if (coins.isZcash(testNetwork)) {
+        if (Coins.isZcash(testNetwork)) {
           txb.setVersion(3)
         }
       })
@@ -384,7 +384,7 @@ describe('TransactionBuilder', function () {
 
         f.inputs.forEach(function (input, index) {
           input.signs.forEach(function (sign) {
-            var keyPairNetwork = NETWORKS[sign.network || f.network]
+            var keyPairNetwork = networks[sign.network || f.network]
             var keyPair2 = ECPair.fromWIF(sign.keyPair, keyPairNetwork)
             var redeemScript
 
@@ -476,7 +476,7 @@ describe('TransactionBuilder', function () {
       var inp = Buffer.from('010000000173120703f67318aef51f7251272a6816d3f7523bb25e34b136d80be959391c100000000000ffffffff0100c817a80400000017a91471a8ec07ff69c6c4fee489184c462a9b1b9237488700000000', 'hex') // arbitrary P2SH input
       var inpTx = Transaction.fromBuffer(inp)
 
-      var txb = new TransactionBuilder(NETWORKS.testnet)
+      var txb = new TransactionBuilder(networks.testnet)
       txb.addInput(inpTx, 0)
       txb.addOutput('2NAkqp5xffoomp5RLBcakuGpZ12GU4twdz4', 1e8) // arbitrary output
 
@@ -487,7 +487,7 @@ describe('TransactionBuilder', function () {
       var inp = Buffer.from('010000000173120703f67318aef51f7251272a6816d3f7523bb25e34b136d80be959391c100000000000ffffffff0100c817a8040000001600141a15805e1f4040c9f68ccc887fca2e63547d794b00000000', 'hex')
       var inpTx = Transaction.fromBuffer(inp)
 
-      var txb = new TransactionBuilder(NETWORKS.testnet)
+      var txb = new TransactionBuilder(networks.testnet)
       txb.addInput(inpTx, 0)
       txb.addOutput('2NAkqp5xffoomp5RLBcakuGpZ12GU4twdz4', 1e8) // arbitrary output
 
@@ -497,7 +497,7 @@ describe('TransactionBuilder', function () {
     it('for incomplete P2WSH with 0 signatures', function () {
       var inpTx = Transaction.fromBuffer(Buffer.from('010000000173120703f67318aef51f7251272a6816d3f7523bb25e34b136d80be959391c100000000000ffffffff0100c817a80400000022002072df76fcc0b231b94bdf7d8c25d7eef4716597818d211e19ade7813bff7a250200000000', 'hex'))
 
-      var txb = new TransactionBuilder(NETWORKS.testnet)
+      var txb = new TransactionBuilder(networks.testnet)
       txb.addInput(inpTx, 0)
       txb.addOutput('2NAkqp5xffoomp5RLBcakuGpZ12GU4twdz4', 1e8) // arbitrary output
 
@@ -510,7 +510,7 @@ describe('TransactionBuilder', function () {
       it(f.description, function () {
         var txb = construct(f, true)
         var tx
-        var network = NETWORKS[f.network]
+        var network = networks[f.network]
 
         f.inputs.forEach(function (input, i) {
           var redeemScript
@@ -557,7 +557,7 @@ describe('TransactionBuilder', function () {
   })
 
   describe('various edge case', function () {
-    var network = NETWORKS.testnet
+    var network = networks.testnet
 
     it('should warn of high fee for segwit transaction based on VSize, not Size', function () {
       var rawtx = '01000000000104fdaac89627208b4733484ca56bc291f4cf4fa8d7c5f29893c52b46788a0a' +
@@ -615,7 +615,7 @@ describe('TransactionBuilder', function () {
       tx.addOutput(Buffer.from('76a914aa4d7985c57e011a8b3dd8e0e5a73aaef41629c588ac', 'hex'), 1000)
 
       // now import the Transaction
-      var txb = TransactionBuilder.fromTransaction(tx, NETWORKS.testnet)
+      var txb = TransactionBuilder.fromTransaction(tx, networks.testnet)
 
       var keyPair2 = ECPair.fromWIF('91avARGdfge8E4tZfYLoxeJ5sGBdNJQH4kvjJoQFacbgx3cTMqe', network)
       txb.sign(0, keyPair2, redeemScript)

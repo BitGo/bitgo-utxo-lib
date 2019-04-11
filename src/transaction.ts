@@ -6,8 +6,6 @@ var bufferutils = require('./bufferutils')
 import { Coins } from './coins';
 var opcodes = require('bitcoin-ops')
 import { networks } from '../src/networks'
-var typeforce = require('typeforce')
-var types = require('./types')
 var varuint = require('varuint-bitcoin')
 var blake2b = require('blake2b')
 
@@ -620,8 +618,8 @@ Transaction.prototype.getHeader = function () {
  * hashType, and then hashes the result.
  * This hash can then be used to sign the provided transaction input.
  */
-Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashType) {
-    typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number), arguments)
+Transaction.prototype.hashForSignature = function (inIndex: number, prevOutScript: Buffer, hashType: number) {
+    // typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number), arguments)
 
     // https://github.com/bitcoin/bitcoin/blob/master/src/test/sighash_tests.cpp#L29
     if (inIndex >= this.ins.length) return ONE
@@ -790,8 +788,8 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
  * @param hashType
  * @returns double SHA-256 or 256-bit BLAKE2b hash
  */
-Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, value, hashType) {
-    typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
+Transaction.prototype.hashForZcashSignature = function (inIndex: number, prevOutScript: Buffer, value: number, hashType: number) {
+    // typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
     if (!Coins.isZcash(this.network)) {
         throw new Error('hashForZcashSignature can only be called when using Zcash network')
     }
@@ -868,8 +866,8 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     // TODO: support non overwinter transactions
 }
 
-Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value, hashType) {
-    typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
+Transaction.prototype.hashForWitnessV0 = function (inIndex: number, prevOutScript: Buffer, value: number, hashType: number) {
+    // typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
 
     var hashPrevouts = this.getPrevoutHash(hashType)
     var hashSequence = this.getSequenceHash(hashType)
@@ -894,8 +892,8 @@ Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value
 /**
  * Hash transaction for signing a specific input for Bitcoin Cash.
  */
-Transaction.prototype.hashForCashSignature = function (inIndex, prevOutScript, inAmount, hashType) {
-    typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number, types.maybe(types.UInt53)), arguments)
+Transaction.prototype.hashForCashSignature = function (inIndex: number, prevOutScript: Buffer, inAmount: number, hashType?: number) {
+    // typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number, types.maybe(types.UInt53)), arguments)
 
     // This function works the way it does because Bitcoin Cash
     // uses BIP143 as their replay protection, AND their algo
@@ -907,7 +905,8 @@ Transaction.prototype.hashForCashSignature = function (inIndex, prevOutScript, i
 
     // BIP143 sighash activated in BitcoinCash via 0x40 bit
     if (hashType & Transaction.SIGHASH_BITCOINCASHBIP143) {
-        if (types.Null(inAmount)) {
+        // if (types.Null(inAmount)) {
+        if (!inAmount) {
             throw new Error('Bitcoin Cash sighash requires value of input to be signed.')
         }
         return this.hashForWitnessV0(inIndex, prevOutScript, inAmount, hashType)
@@ -919,8 +918,8 @@ Transaction.prototype.hashForCashSignature = function (inIndex, prevOutScript, i
 /**
  * Hash transaction for signing a specific input for Bitcoin Gold.
  */
-Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, inAmount, hashType, sigVersion) {
-    typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number, types.maybe(types.UInt53)), arguments)
+Transaction.prototype.hashForGoldSignature = function (inIndex: number, prevOutScript: Buffer, inAmount: number, hashType: number, sigVersion) {
+    // typeforce(types.tuple(types.UInt32, types.Buffer, /* types.UInt8 */ types.Number, types.maybe(types.UInt53)), arguments)
 
     // Bitcoin Gold also implements segregated witness
     // therefore we can pull out the setting of nForkHashType
@@ -934,7 +933,8 @@ Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, i
 
     // BIP143 sighash activated in BitcoinCash via 0x40 bit
     if (sigVersion || fUseForkId) {
-        if (types.Null(inAmount)) {
+        // if (types.Null(inAmount)) {
+        if (!inAmount) {
             throw new Error('Bitcoin Cash sighash requires value of input to be signed.')
         }
         return this.hashForWitnessV0(inIndex, prevOutScript, inAmount, nForkHashType)
@@ -1111,14 +1111,14 @@ Transaction.prototype.toHex = function () {
     return this.toBuffer().toString('hex')
 }
 
-Transaction.prototype.setInputScript = function (index, scriptSig) {
-    typeforce(types.tuple(types.Number, types.Buffer), arguments)
+Transaction.prototype.setInputScript = function (index: number, scriptSig: Buffer) {
+    // typeforce(types.tuple(types.Number, types.Buffer), arguments)
 
     this.ins[index].script = scriptSig
 }
 
-Transaction.prototype.setWitness = function (index, witness) {
-    typeforce(types.tuple(types.Number, [types.Buffer]), arguments)
+Transaction.prototype.setWitness = function (index: number, witness: Buffer) {
+    // typeforce(types.tuple(types.Number, [types.Buffer]), arguments)
 
     this.ins[index].witness = witness
 }

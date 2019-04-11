@@ -1,8 +1,6 @@
 // OP_RETURN {data}
 
 var bscript = require('../script')
-var types = require('../types')
-var typeforce = require('typeforce')
 var OPS = require('bitcoin-ops')
 
 function check (script) {
@@ -13,15 +11,17 @@ function check (script) {
 }
 check.toJSON = function () { return 'null data output' }
 
-function encode (data) {
+function encode (data: any) {
   // Allow arrays types since decompile returns an array too
-  typeforce(typeforce.oneOf(types.Buffer, types.Array), data)
+  // typeforce(typeforce.oneOf(types.Buffer, types.Array), data)
 
   return bscript.compile([OPS.OP_RETURN].concat(data))
 }
 
 function decode (buffer) {
-  typeforce(check, buffer)
+  if (!check(buffer)) {
+    throw Error('Check failed')
+  }
 
   var chunks = bscript.decompile(buffer)
 

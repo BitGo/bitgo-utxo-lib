@@ -6,14 +6,12 @@ var btemplates = require('./templates/index')
 import {Coins} from './coins'
 import { networks, TickerSymbol } from './networks'
 var ops = require('bitcoin-ops')
-var typeforce = require('typeforce')
-var types = require('./types')
 var scriptTypes = btemplates.types
 var SIGNABLE = [btemplates.types.P2PKH, btemplates.types.P2PK, btemplates.types.MULTISIG]
 var P2SH = SIGNABLE.concat([btemplates.types.P2WPKH, btemplates.types.P2WSH])
 
 var ECPair = require('./ecpair')
-var ECSignature = require('./ecsignature')
+import {ECSignature} from './ecsignature'
 var Transaction = require('./transaction')
 
 var debug = require('debug')('bitgo:utxolib:txbuilder')
@@ -237,8 +235,8 @@ function fixMultisigOrder (input, transaction, vin, value, network) {
   })
 }
 
-function expandOutput (script, scriptType?, ourPubKey?) {
-  typeforce(types.Buffer, script)
+function expandOutput (script: Buffer, scriptType?, ourPubKey?) {
+  // typeforce(types.Buffer, script)
 
   var scriptChunks = bscript.decompile(script)
   if (!scriptType) {
@@ -531,21 +529,21 @@ TransactionBuilder.prototype.setVersion = function (version: number, overwinter:
   this.tx.version = version
 }
 
-TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
+TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId: number) {
   if (!(Coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
-  typeforce(types.UInt32, versionGroupId)
+  // typeforce(types.UInt32, versionGroupId)
   this.tx.versionGroupId = versionGroupId
 }
 
-TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
+TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight: number) {
   if (!(Coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
-  typeforce(types.UInt32, expiryHeight)
+  // typeforce(types.UInt32, expiryHeight)
   this.tx.expiryHeight = expiryHeight
 }
 
@@ -764,7 +762,7 @@ function canSign (input) {
     )
 }
 
-TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashType, witnessValue, witnessScript) {
+TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashType, witnessValue?: number, witnessScript?) {
   debug('Signing transaction: (input: %d, hashType: %d, witnessVal: %s, witnessScript: %j)', vin, hashType, witnessValue, witnessScript)
   debug('Transaction Builder network: %j', this.network)
 
@@ -786,7 +784,7 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   if (!canSign(input)) {
     if (witnessValue !== undefined) {
       if (input.value !== undefined && input.value !== witnessValue) throw new Error('Input didn\'t match witnessValue')
-      typeforce(types.Satoshi, witnessValue)
+      // typeforce(types.Satoshi, witnessValue)
       input.value = witnessValue
     }
 
