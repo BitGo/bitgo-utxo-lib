@@ -4,7 +4,7 @@ var assert = require('assert')
 var types = require('../src/types')
 var typeforce = require('typeforce')
 
-describe('types', function () {
+xdescribe('types', function () {
   describe('BigInt/ECPoint', function () {
     it('return true for duck types', function () {
       assert(types.BigInt(new function BigInteger () {}()))
