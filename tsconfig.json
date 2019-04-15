@@ -5,6 +5,10 @@
     "watch": true,
     "allowJs": true,
     "target": "es5",
+    "sourceMap": true,
+    "declaration": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "rootDirs": [
       "src",
       "tests"
@@ -12,25 +16,10 @@
   },
   "include": [
     "src/**/*",
-    "test/**/*"
+    "test/**/*",
+    "package.json"
   ],
   "exclude": [
     "node_modules"
   ]
 }
-
-//{
-//  "compilerOptions": {
-//    "module": "commonjs",
-//    "esModuleInterop": true,
-//    "target": "es6",
-//    "noImplicitAny": true,
-//    "sourceMap": true,
-//    "outDir": "dist",
-//    "baseUrl": ".",
-//    "lib": ["es6", "es2016.array.include"],
-//    "strict": true,
-//    "declaration": true,
-//    "types": ["lodash", "node", "mocha"]
-//  },
-//}

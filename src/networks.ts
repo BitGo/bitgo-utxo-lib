@@ -1,4 +1,4 @@
-interface Bip32 {
+export interface Bip32 {
     public: number;
     private: number;
 }

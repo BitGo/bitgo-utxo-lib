@@ -3,6 +3,7 @@
 var assert = require('assert')
 var bigi = require('bigi')
 var bitcoin = require('./../../src/')
+import {ECSignature} from '../../src/ecsignature'
 import crypto = require('crypto')
 
 var ecurve = require('ecurve')
@@ -21,7 +22,7 @@ describe('bitcoinjs-lib (crypto)', function () {
 
       assert(bitcoin.script.pubKeyHash.input.check(scriptChunks), 'Expected pubKeyHash script')
       var prevOutScript = bitcoin.address.toOutputScript('1ArJ9vRaQcoQ29mTWZH768AmRwzb6Zif1z')
-      var scriptSignature = bitcoin.ECSignature.parseScriptSignature(scriptChunks[0])
+      var scriptSignature = ECSignature.parseScriptSignature(scriptChunks[0])
       var publicKey = bitcoin.ECPair.fromPublicKeyBuffer(scriptChunks[1])
 
       var m = tx.hashForSignature(vin, prevOutScript, scriptSignature.hashType)

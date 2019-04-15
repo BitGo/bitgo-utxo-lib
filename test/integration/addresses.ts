@@ -4,6 +4,7 @@ var assert = require('assert')
 var bigi = require('bigi')
 var bitcoin = require('./../../src/')
 var dhttp = require('dhttp/200')
+import { networks } from '../../src/networks'
 
 // deterministic RNG for testing only
 function rng () { return Buffer.from('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz') }
@@ -117,7 +118,7 @@ describe('bitcoinjs-lib (addresses)', function () {
 
   // other networks
   it('can generate a Testnet address', function () {
-    var testnet = bitcoin.networks.testnet
+    var testnet = networks.testnet
     var keyPair = bitcoin.ECPair.makeRandom({ network: testnet, rng: rng })
     var wif = keyPair.toWIF()
     var address = keyPair.getAddress()
@@ -127,7 +128,7 @@ describe('bitcoinjs-lib (addresses)', function () {
   })
 
   it('can generate a Litecoin address', function () {
-    var litecoin = bitcoin.networks.litecoin
+    var litecoin = networks.litecoin
     var keyPair = bitcoin.ECPair.makeRandom({ network: litecoin, rng: rng })
     var wif = keyPair.toWIF()
     var address = keyPair.getAddress()

@@ -55,7 +55,7 @@ HDNode.fromSeedHex = function (hex, network) {
   return HDNode.fromSeedBuffer(Buffer.from(hex, 'hex'), network)
 }
 
-HDNode.fromBase58 = function (string, networks) {
+HDNode.fromBase58 = function (string, networkList) {
   var buffer = base58check.decode(string)
   if (buffer.length !== 78) throw new Error('Invalid buffer length')
 
@@ -64,8 +64,8 @@ HDNode.fromBase58 = function (string, networks) {
   var network
 
   // list of networks?
-  if (Array.isArray(networks)) {
-    network = networks.filter(function (x) {
+  if (Array.isArray(networkList)) {
+    network = networkList.filter(function (x) {
       return version === x.bip32.private ||
              version === x.bip32.public
     }).pop()
@@ -74,7 +74,7 @@ HDNode.fromBase58 = function (string, networks) {
 
   // otherwise, assume a network object (or default to bitcoin)
   } else {
-    network = networks || networks.bitcoin
+    network = networkList || networks.bitcoin
   }
 
   if (version !== network.bip32.private &&

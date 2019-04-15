@@ -4,8 +4,6 @@ var bs58check = require('bs58check')
 var bscript = require('./script')
 var btemplates = require('./templates/index')
 import { networks } from '../src/networks'
-var typeforce = require('typeforce')
-var types = require('./types')
 
 function fromBase58Check (address) {
   var payload = bs58check.decode(address)

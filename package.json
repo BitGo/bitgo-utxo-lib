@@ -59,6 +59,7 @@
     "bip65": "^1.0.1",
     "bs58": "^4.0.0",
     "dhttp": "^2.4.2",
+    "eslint": "^5.16.0",
     "minimaldata": "^1.0.2",
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
@@ -66,8 +67,7 @@
     "sinon": "^1.12.2",
     "ts-node": "^8.0.3",
     "tslint": "~5.14.0",
-    "tslint-eslint-rules": "~5.4.0",
-    "eslint": "~5.15.3"
+    "tslint-eslint-rules": "~5.4.0"
   },
   "license": "MIT",
   "optionalDependencies": {

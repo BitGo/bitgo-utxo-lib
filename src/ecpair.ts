@@ -18,12 +18,6 @@ interface Options {
   network?: Network
 }
 
-interface Function {
-    fromPrivateKeyBuffer: any;
-    fromWIF: any;
-    makeRandom: any;
-}
-
 function ECPair (d, Q?:any, options?: Options) {
   options = options || {}
 
