@@ -80,13 +80,13 @@ BufferReader.prototype.readVector = function () {
 }
 
 BufferReader.prototype.readCompressedG1 = function () {
-    var yLsb = this.readUInt8() & 1
-    var x = this.readSlice(32)
-    return {
-      x: x,
-      yLsb: yLsb
-    }
+  var yLsb = this.readUInt8() & 1
+  var x = this.readSlice(32)
+  return {
+    x: x,
+    yLsb: yLsb
   }
+}
 
 BufferReader.prototype.readCompressedG2 = function () {
   var yLsb = this.readUInt8() & 1

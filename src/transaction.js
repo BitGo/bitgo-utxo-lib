@@ -74,9 +74,6 @@ Transaction.ZCASH_OVERWINTER_VERSION = 3
 Transaction.ZCASH_SAPLING_VERSION = 4
 Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION = 2
 
-Transaction.ZCASH_G1_PREFIX_MASK = 0x02
-Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
-
 Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStrict) {
   var bufferReader = new BufferReader(buffer)
   var tx = new Transaction(network)
@@ -793,154 +790,135 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset) {
 }
 
 Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitness) {
-  if (!buffer) buffer = Buffer.allocUnsafe(this.__byteLength(__allowWitness))
+  var bufferWriter = new BufferWriter(this.__byteLength(__allowWitness), initialOffset)
 
-  var offset = initialOffset || 0
-  function writeSlice (slice) { offset += slice.copy(buffer, offset) }
-  function writeUInt8 (i) { offset = buffer.writeUInt8(i, offset) }
-  function writeUInt32 (i) { offset = buffer.writeUInt32LE(i, offset) }
-  function writeInt32 (i) { offset = buffer.writeInt32LE(i, offset) }
-  function writeUInt64 (i) { offset = bufferutils.writeUInt64LE(buffer, i, offset) }
-  function writeVarInt (i) {
-    varuint.encode(i, buffer, offset)
-    offset += varuint.encode.bytes
-  }
-  function writeVarSlice (slice) { writeVarInt(slice.length); writeSlice(slice) }
-  function writeVector (vector) { writeVarInt(vector.length); vector.forEach(writeVarSlice) }
-
-  function writeCompressedG1 (i) {
-    writeUInt8(Transaction.ZCASH_G1_PREFIX_MASK | i.yLsb)
-    writeSlice(i.x)
-  }
-
-  function writeCompressedG2 (i) {
-    writeUInt8(Transaction.ZCASH_G2_PREFIX_MASK | i.yLsb)
-    writeSlice(i.x)
+  if (buffer) {
+    bufferWriter.setBuffer(buffer)
   }
 
   if (this.isOverwinterCompatible()) {
     var mask = (this.overwintered ? 1 : 0)
-    writeInt32(this.version | (mask << 31))  // Set overwinter bit
-    writeUInt32(this.versionGroupId)
+    bufferWriter.writeInt32(this.version | (mask << 31))  // Set overwinter bit
+    bufferWriter.writeUInt32(this.versionGroupId)
   } else {
-    writeInt32(this.version)
+    bufferWriter.writeInt32(this.version)
   }
 
   var hasWitnesses = __allowWitness && this.hasWitnesses()
 
   if (hasWitnesses) {
-    writeUInt8(Transaction.ADVANCED_TRANSACTION_MARKER)
-    writeUInt8(Transaction.ADVANCED_TRANSACTION_FLAG)
+    bufferWriter.writeUInt8(Transaction.ADVANCED_TRANSACTION_MARKER)
+    bufferWriter.writeUInt8(Transaction.ADVANCED_TRANSACTION_FLAG)
   }
 
-  writeVarInt(this.ins.length)
+  bufferWriter.writeVarInt(this.ins.length)
 
   this.ins.forEach(function (txIn) {
-    writeSlice(txIn.hash)
-    writeUInt32(txIn.index)
-    writeVarSlice(txIn.script)
-    writeUInt32(txIn.sequence)
+    bufferWriter.writeSlice(txIn.hash)
+    bufferWriter.writeUInt32(txIn.index)
+    bufferWriter.writeVarSlice(txIn.script)
+    bufferWriter.writeUInt32(txIn.sequence)
   })
 
-  writeVarInt(this.outs.length)
+  bufferWriter.writeVarInt(this.outs.length)
   this.outs.forEach(function (txOut) {
     if (!txOut.valueBuffer) {
-      writeUInt64(txOut.value)
+      bufferWriter.writeUInt64(txOut.value)
     } else {
-      writeSlice(txOut.valueBuffer)
+      bufferWriter.writeSlice(txOut.valueBuffer)
     }
 
-    writeVarSlice(txOut.script)
+    bufferWriter.writeVarSlice(txOut.script)
   })
 
   if (hasWitnesses) {
     this.ins.forEach(function (input) {
-      writeVector(input.witness)
+      bufferWriter.writeVector(input.witness)
     })
   }
 
-  writeUInt32(this.locktime)
+  bufferWriter.writeUInt32(this.locktime)
 
   if (this.isOverwinterCompatible()) {
-    writeUInt32(this.expiryHeight)
+    bufferWriter.writeUInt32(this.expiryHeight)
   }
 
   if (this.isSaplingCompatible()) {
-    writeUInt64(this.valueBalance)
+    bufferWriter.writeUInt64(this.valueBalance)
 
-    writeVarInt(this.vShieldedSpend.length)
+    bufferWriter.writeVarInt(this.vShieldedSpend.length)
     this.vShieldedSpend.forEach(function (shieldedSpend) {
-      writeSlice(shieldedSpend.cv)
-      writeSlice(shieldedSpend.anchor)
-      writeSlice(shieldedSpend.nullifier)
-      writeSlice(shieldedSpend.rk)
-      writeSlice(shieldedSpend.zkproof.sA)
-      writeSlice(shieldedSpend.zkproof.sB)
-      writeSlice(shieldedSpend.zkproof.sC)
-      writeSlice(shieldedSpend.spendAuthSig)
+      bufferWriter.writeSlice(shieldedSpend.cv)
+      bufferWriter.writeSlice(shieldedSpend.anchor)
+      bufferWriter.writeSlice(shieldedSpend.nullifier)
+      bufferWriter.writeSlice(shieldedSpend.rk)
+      bufferWriter.writeSlice(shieldedSpend.zkproof.sA)
+      bufferWriter.writeSlice(shieldedSpend.zkproof.sB)
+      bufferWriter.writeSlice(shieldedSpend.zkproof.sC)
+      bufferWriter.writeSlice(shieldedSpend.spendAuthSig)
     })
-    writeVarInt(this.vShieldedOutput.length)
+    bufferWriter.writeVarInt(this.vShieldedOutput.length)
     this.vShieldedOutput.forEach(function (shieldedOutput) {
-      writeSlice(shieldedOutput.cv)
-      writeSlice(shieldedOutput.cmu)
-      writeSlice(shieldedOutput.ephemeralKey)
-      writeSlice(shieldedOutput.encCiphertext)
-      writeSlice(shieldedOutput.outCiphertext)
-      writeSlice(shieldedOutput.zkproof.sA)
-      writeSlice(shieldedOutput.zkproof.sB)
-      writeSlice(shieldedOutput.zkproof.sC)
+      bufferWriter.writeSlice(shieldedOutput.cv)
+      bufferWriter.writeSlice(shieldedOutput.cmu)
+      bufferWriter.writeSlice(shieldedOutput.ephemeralKey)
+      bufferWriter.writeSlice(shieldedOutput.encCiphertext)
+      bufferWriter.writeSlice(shieldedOutput.outCiphertext)
+      bufferWriter.writeSlice(shieldedOutput.zkproof.sA)
+      bufferWriter.writeSlice(shieldedOutput.zkproof.sB)
+      bufferWriter.writeSlice(shieldedOutput.zkproof.sC)
     })
   }
 
   if (this.supportsJoinSplits()) {
-    writeVarInt(this.joinsplits.length)
+    bufferWriter.writeVarInt(this.joinsplits.length)
     this.joinsplits.forEach(function (joinsplit) {
-      writeUInt64(joinsplit.vpubOld)
-      writeUInt64(joinsplit.vpubNew)
-      writeSlice(joinsplit.anchor)
+      bufferWriter.writeUInt64(joinsplit.vpubOld)
+      bufferWriter.writeUInt64(joinsplit.vpubNew)
+      bufferWriter.writeSlice(joinsplit.anchor)
       joinsplit.nullifiers.forEach(function (nullifier) {
-        writeSlice(nullifier)
+        bufferWriter.writeSlice(nullifier)
       })
       joinsplit.commitments.forEach(function (nullifier) {
-        writeSlice(nullifier)
+        bufferWriter.writeSlice(nullifier)
       })
-      writeSlice(joinsplit.ephemeralKey)
-      writeSlice(joinsplit.randomSeed)
+      bufferWriter.writeSlice(joinsplit.ephemeralKey)
+      bufferWriter.writeSlice(joinsplit.randomSeed)
       joinsplit.macs.forEach(function (nullifier) {
-        writeSlice(nullifier)
+        bufferWriter.writeSlice(nullifier)
       })
       if (this.isSaplingCompatible()) {
-        writeSlice(joinsplit.zkproof.sA)
-        writeSlice(joinsplit.zkproof.sB)
-        writeSlice(joinsplit.zkproof.sC)
+        bufferWriter.writeSlice(joinsplit.zkproof.sA)
+        bufferWriter.writeSlice(joinsplit.zkproof.sB)
+        bufferWriter.writeSlice(joinsplit.zkproof.sC)
       } else {
-        writeCompressedG1(joinsplit.zkproof.gA)
-        writeCompressedG1(joinsplit.zkproof.gAPrime)
-        writeCompressedG2(joinsplit.zkproof.gB)
-        writeCompressedG1(joinsplit.zkproof.gBPrime)
-        writeCompressedG1(joinsplit.zkproof.gC)
-        writeCompressedG1(joinsplit.zkproof.gCPrime)
-        writeCompressedG1(joinsplit.zkproof.gK)
-        writeCompressedG1(joinsplit.zkproof.gH)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gA)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gAPrime)
+        bufferWriter.writeCompressedG2(joinsplit.zkproof.gB)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gBPrime)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gC)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gCPrime)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gK)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gH)
       }
       joinsplit.ciphertexts.forEach(function (ciphertext) {
-        writeSlice(ciphertext)
+        bufferWriter.writeSlice(ciphertext)
       })
     }, this)
     if (this.joinsplits.length > 0) {
-      writeSlice(this.joinsplitPubkey)
-      writeSlice(this.joinsplitSig)
+      bufferWriter.writeSlice(this.joinsplitPubkey)
+      bufferWriter.writeSlice(this.joinsplitSig)
     }
   }
 
   if (this.isSaplingCompatible() && this.vShieldedSpend.length + this.vShieldedOutput.length > 0) {
-    writeSlice(this.bindingSig)
+    bufferWriter.writeSlice(this.bindingSig)
   }
 
   // avoid slicing unless necessary
-  if (initialOffset !== undefined) return buffer.slice(initialOffset, offset)
+  if (initialOffset !== undefined) return bufferWriter.getBuffer()
   // TODO (https://github.com/BitGo/bitgo-utxo-lib/issues/11): we shouldn't have to slice the final buffer
-  return buffer.slice(0, offset)
+  return bufferWriter.getBuffer()
 }
 
 Transaction.prototype.toHex = function () {
