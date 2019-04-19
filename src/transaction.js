@@ -1,5 +1,6 @@
 var Buffer = require('safe-buffer').Buffer
 var BufferWriter = require('./bufferWriter')
+var BufferReader = require('./bufferReader')
 var bcrypto = require('./crypto')
 var bscript = require('./script')
 var bufferutils = require('./bufferutils')
@@ -72,182 +73,14 @@ var BLANK_OUTPUT = {
 Transaction.ZCASH_OVERWINTER_VERSION = 3
 Transaction.ZCASH_SAPLING_VERSION = 4
 Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION = 2
-Transaction.ZCASH_NUM_JOINSPLITS_INPUTS = 2
-Transaction.ZCASH_NUM_JOINSPLITS_OUTPUTS = 2
-Transaction.ZCASH_NOTECIPHERTEXT_SIZE = 1 + 8 + 32 + 32 + 512 + 16
 
 Transaction.ZCASH_G1_PREFIX_MASK = 0x02
 Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
 
 Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStrict) {
-  var offset = 0
-  function readSlice (n) {
-    offset += n
-    return buffer.slice(offset - n, offset)
-  }
-
-  function readUInt8 () {
-    var i = buffer.readUInt8(offset)
-    offset += 1
-    return i
-  }
-
-  function readUInt32 () {
-    var i = buffer.readUInt32LE(offset)
-    offset += 4
-    return i
-  }
-
-  function readInt32 () {
-    var i = buffer.readInt32LE(offset)
-    offset += 4
-    return i
-  }
-
-  function readInt64 () {
-    var i = bufferutils.readInt64LE(buffer, offset)
-    offset += 8
-    return i
-  }
-
-  function readUInt64 () {
-    var i = bufferutils.readUInt64LE(buffer, offset)
-    offset += 8
-    return i
-  }
-
-  function readVarInt () {
-    var vi = varuint.decode(buffer, offset)
-    offset += varuint.decode.bytes
-    return vi
-  }
-
-  function readVarSlice () {
-    return readSlice(readVarInt())
-  }
-
-  function readVector () {
-    var count = readVarInt()
-    var vector = []
-    for (var i = 0; i < count; i++) vector.push(readVarSlice())
-    return vector
-  }
-
-  function readCompressedG1 () {
-    var yLsb = readUInt8() & 1
-    var x = readSlice(32)
-    return {
-      x: x,
-      yLsb: yLsb
-    }
-  }
-
-  function readCompressedG2 () {
-    var yLsb = readUInt8() & 1
-    var x = readSlice(64)
-    return {
-      x: x,
-      yLsb: yLsb
-    }
-  }
-
-  function readZKProof () {
-    var zkproof
-    if (tx.isSaplingCompatible()) {
-      zkproof = {
-        sA: readSlice(48),
-        sB: readSlice(96),
-        sC: readSlice(48)
-      }
-    } else {
-      zkproof = {
-        gA: readCompressedG1(),
-        gAPrime: readCompressedG1(),
-        gB: readCompressedG2(),
-        gBPrime: readCompressedG1(),
-        gC: readCompressedG1(),
-        gCPrime: readCompressedG1(),
-        gK: readCompressedG1(),
-        gH: readCompressedG1()
-      }
-    }
-    return zkproof
-  }
-
-  function readJoinSplit () {
-    var vpubOld = readUInt64()
-    var vpubNew = readUInt64()
-    var anchor = readSlice(32)
-    var nullifiers = []
-    for (var j = 0; j < Transaction.ZCASH_NUM_JOINSPLITS_INPUTS; j++) {
-      nullifiers.push(readSlice(32))
-    }
-    var commitments = []
-    for (j = 0; j < Transaction.ZCASH_NUM_JOINSPLITS_OUTPUTS; j++) {
-      commitments.push(readSlice(32))
-    }
-    var ephemeralKey = readSlice(32)
-    var randomSeed = readSlice(32)
-    var macs = []
-    for (j = 0; j < Transaction.ZCASH_NUM_JOINSPLITS_INPUTS; j++) {
-      macs.push(readSlice(32))
-    }
-
-    var zkproof = readZKProof()
-    var ciphertexts = []
-    for (j = 0; j < Transaction.ZCASH_NUM_JOINSPLITS_OUTPUTS; j++) {
-      ciphertexts.push(readSlice(Transaction.ZCASH_NOTECIPHERTEXT_SIZE))
-    }
-    return {
-      vpubOld: vpubOld,
-      vpubNew: vpubNew,
-      anchor: anchor,
-      nullifiers: nullifiers,
-      commitments: commitments,
-      ephemeralKey: ephemeralKey,
-      randomSeed: randomSeed,
-      macs: macs,
-      zkproof: zkproof,
-      ciphertexts: ciphertexts
-    }
-  }
-
-  function readShieldedSpend () {
-    var cv = readSlice(32)
-    var anchor = readSlice(32)
-    var nullifier = readSlice(32)
-    var rk = readSlice(32)
-    var zkproof = readZKProof()
-    var spendAuthSig = readSlice(64)
-    return {
-      cv: cv,
-      anchor: anchor,
-      nullifier: nullifier,
-      rk: rk,
-      zkproof: zkproof,
-      spendAuthSig: spendAuthSig
-    }
-  }
-
-  function readShieldedOutput () {
-    var cv = readSlice(32)
-    var cmu = readSlice(32)
-    var ephemeralKey = readSlice(32)
-    var encCiphertext = readSlice(580)
-    var outCiphertext = readSlice(80)
-    var zkproof = readZKProof()
-
-    return {
-      cv: cv,
-      cmu: cmu,
-      ephemeralKey: ephemeralKey,
-      encCiphertext: encCiphertext,
-      outCiphertext: outCiphertext,
-      zkproof: zkproof
-    }
-  }
+  var bufferReader = new BufferReader(buffer)
   var tx = new Transaction(network)
-  tx.version = readInt32()
+  tx.version = bufferReader.readInt32()
 
   if (coins.isZcash(network)) {
     // Split the header into fOverwintered and nVersion
@@ -258,90 +91,93 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     }
   }
 
-  var marker = buffer.readUInt8(offset)
-  var flag = buffer.readUInt8(offset + 1)
+  var marker = bufferReader.readUInt8()
+  var flag = bufferReader.readUInt8()
 
   var hasWitnesses = false
   if (marker === Transaction.ADVANCED_TRANSACTION_MARKER &&
       flag === Transaction.ADVANCED_TRANSACTION_FLAG &&
       !coins.isZcash(network)) {
-    offset += 2
     hasWitnesses = true
+  } else {
+    bufferReader.addToOffset(-2)
   }
 
   if (tx.isOverwinterCompatible()) {
-    tx.versionGroupId = readUInt32()
+    tx.versionGroupId = bufferReader.readUInt32()
   }
 
-  var vinLen = readVarInt()
+  var vinLen = bufferReader.readVarInt()
   for (var i = 0; i < vinLen; ++i) {
     tx.ins.push({
-      hash: readSlice(32),
-      index: readUInt32(),
-      script: readVarSlice(),
-      sequence: readUInt32(),
+      hash: bufferReader.readSlice(32),
+      index: bufferReader.readUInt32(),
+      script: bufferReader.readVarSlice(),
+      sequence: bufferReader.readUInt32(),
       witness: EMPTY_WITNESS
     })
   }
 
-  var voutLen = readVarInt()
+  var voutLen = bufferReader.readVarInt()
   for (i = 0; i < voutLen; ++i) {
     tx.outs.push({
-      value: readUInt64(),
-      script: readVarSlice()
+      value: bufferReader.readUInt64(),
+      script: bufferReader.readVarSlice()
     })
   }
 
   if (hasWitnesses) {
     for (i = 0; i < vinLen; ++i) {
-      tx.ins[i].witness = readVector()
+      tx.ins[i].witness = bufferReader.readVector()
     }
 
     // was this pointless?
     if (!tx.hasWitnesses()) throw new Error('Transaction has superfluous witness data')
   }
 
-  tx.locktime = readUInt32()
+  tx.locktime = bufferReader.readUInt32()
 
   if (coins.isZcash(network)) {
     if (tx.isOverwinterCompatible()) {
-      tx.expiryHeight = readUInt32()
+      tx.expiryHeight = bufferReader.readUInt32()
     }
 
     if (tx.isSaplingCompatible()) {
-      tx.valueBalance = readInt64()
-      var nShieldedSpend = readVarInt()
+      tx.valueBalance = bufferReader.readInt64()
+      var nShieldedSpend = bufferReader.readVarInt()
       for (i = 0; i < nShieldedSpend; ++i) {
-        tx.vShieldedSpend.push(readShieldedSpend())
+        tx.vShieldedSpend.push(bufferReader.readShieldedSpend(tx.isSaplingCompatible()))
       }
 
-      var nShieldedOutput = readVarInt()
+      var nShieldedOutput = bufferReader.readVarInt()
       for (i = 0; i < nShieldedOutput; ++i) {
-        tx.vShieldedOutput.push(readShieldedOutput())
+        tx.vShieldedOutput.push(bufferReader.readShieldedOutput(tx.isSaplingCompatible()))
       }
     }
 
     if (tx.supportsJoinSplits()) {
-      var joinSplitsLen = readVarInt()
+      var joinSplitsLen = bufferReader.readVarInt()
       for (i = 0; i < joinSplitsLen; ++i) {
-        tx.joinsplits.push(readJoinSplit())
+        tx.joinsplits.push(bufferReader.readJoinSplit(tx.isSaplingCompatible()))
       }
       if (joinSplitsLen > 0) {
-        tx.joinsplitPubkey = readSlice(32)
-        tx.joinsplitSig = readSlice(64)
+        tx.joinsplitPubkey = bufferReader.readSlice(32)
+        tx.joinsplitSig = bufferReader.readSlice(64)
       }
     }
 
     if (tx.isSaplingCompatible() &&
       tx.vShieldedSpend.length + tx.vShieldedOutput.length > 0) {
-      tx.bindingSig = readSlice(64)
+      tx.bindingSig = bufferReader.readSlice(64)
     }
   }
 
   tx.network = network
 
   if (__noStrict) return tx
-  if (offset !== buffer.length) throw new Error('Transaction has unexpected data')
+  if (bufferReader.getOffset() !== buffer.length) {
+    throw new Error('Transaction has unexpected data')
+  }
 
   return tx
 }
