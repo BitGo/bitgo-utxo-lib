@@ -3,7 +3,6 @@ var BufferWriter = require('./bufferWriter')
 var BufferReader = require('./bufferReader')
 var bcrypto = require('./crypto')
 var bscript = require('./script')
-var bufferutils = require('./bufferutils')
 var coins = require('./coins')
 var opcodes = require('bitcoin-ops')
 var networks = require('./networks')
@@ -286,7 +285,7 @@ Transaction.prototype.getJoinSplitByteLength = function () {
   }
   var joinSplitsLen = this.joinsplits.length
   var byteLength = 0
-  byteLength += bufferutils.varIntSize(joinSplitsLen)  // vJoinSplit
+  byteLength += varuint.encodingLength(joinSplitsLen)  // vJoinSplit
 
   if (joinSplitsLen > 0) {
     // Both pre and post Sapling JoinSplits are encoded with the following data:
@@ -847,63 +846,15 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     bufferWriter.writeUInt64(this.valueBalance)
 
     bufferWriter.writeVarInt(this.vShieldedSpend.length)
-    this.vShieldedSpend.forEach(function (shieldedSpend) {
-      bufferWriter.writeSlice(shieldedSpend.cv)
-      bufferWriter.writeSlice(shieldedSpend.anchor)
-      bufferWriter.writeSlice(shieldedSpend.nullifier)
-      bufferWriter.writeSlice(shieldedSpend.rk)
-      bufferWriter.writeSlice(shieldedSpend.zkproof.sA)
-      bufferWriter.writeSlice(shieldedSpend.zkproof.sB)
-      bufferWriter.writeSlice(shieldedSpend.zkproof.sC)
-      bufferWriter.writeSlice(shieldedSpend.spendAuthSig)
-    })
+    this.vShieldedSpend.forEach(bufferWriter.writeShieldedSpend, bufferWriter)
     bufferWriter.writeVarInt(this.vShieldedOutput.length)
-    this.vShieldedOutput.forEach(function (shieldedOutput) {
-      bufferWriter.writeSlice(shieldedOutput.cv)
-      bufferWriter.writeSlice(shieldedOutput.cmu)
-      bufferWriter.writeSlice(shieldedOutput.ephemeralKey)
-      bufferWriter.writeSlice(shieldedOutput.encCiphertext)
-      bufferWriter.writeSlice(shieldedOutput.outCiphertext)
-      bufferWriter.writeSlice(shieldedOutput.zkproof.sA)
-      bufferWriter.writeSlice(shieldedOutput.zkproof.sB)
-      bufferWriter.writeSlice(shieldedOutput.zkproof.sC)
-    })
+    this.vShieldedOutput.forEach(bufferWriter.writeShieldedOutput, bufferWriter)
   }
 
   if (this.supportsJoinSplits()) {
     bufferWriter.writeVarInt(this.joinsplits.length)
     this.joinsplits.forEach(function (joinsplit) {
-      bufferWriter.writeUInt64(joinsplit.vpubOld)
-      bufferWriter.writeUInt64(joinsplit.vpubNew)
-      bufferWriter.writeSlice(joinsplit.anchor)
-      joinsplit.nullifiers.forEach(function (nullifier) {
-        bufferWriter.writeSlice(nullifier)
-      })
-      joinsplit.commitments.forEach(function (nullifier) {
-        bufferWriter.writeSlice(nullifier)
-      })
-      bufferWriter.writeSlice(joinsplit.ephemeralKey)
-      bufferWriter.writeSlice(joinsplit.randomSeed)
-      joinsplit.macs.forEach(function (nullifier) {
-        bufferWriter.writeSlice(nullifier)
-      })
-      if (this.isSaplingCompatible()) {
-        bufferWriter.writeSlice(joinsplit.zkproof.sA)
-        bufferWriter.writeSlice(joinsplit.zkproof.sB)
-        bufferWriter.writeSlice(joinsplit.zkproof.sC)
-      } else {
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gA)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gAPrime)
-        bufferWriter.writeCompressedG2(joinsplit.zkproof.gB)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gBPrime)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gC)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gCPrime)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gK)
-        bufferWriter.writeCompressedG1(joinsplit.zkproof.gH)
-      }
-      joinsplit.ciphertexts.forEach(function (ciphertext) {
-        bufferWriter.writeSlice(ciphertext)
-      })
+      bufferWriter.writeJoinSplit(joinsplit, this.isSaplingCompatible())
     }, this)
     if (this.joinsplits.length > 0) {
       bufferWriter.writeSlice(this.joinsplitPubkey)
