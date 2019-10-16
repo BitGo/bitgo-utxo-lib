@@ -50,7 +50,9 @@
     "typeforce": "^1.11.3",
     "varuint-bitcoin": "^1.0.4",
     "wif": "^2.0.1",
-    "groestl-hash-js": "https://github.com/Groestlcoin/groestl-hash-js.git"
+    "groestl-hash-js": "https://github.com/Groestlcoin/groestl-hash-js.git",
+    "bs58grscheck": "https://github.com/Groestlcoin/bs58grscheck",
+    "wifgrs" : "https://github.com/Groestlcoin/wifgrs"
   },
   "devDependencies": {
     "bip39": "^2.3.0",
