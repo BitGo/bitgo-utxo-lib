@@ -6,6 +6,7 @@ var typeforce = require('typeforce')
 var types = require('./types')
 var wif = require('wif')
 var wifgrs = require('wifgrs')
+var coins = require('./coins')
 
 var NETWORKS = require('./networks')
 var BigInteger = require('bigi')
@@ -170,8 +171,9 @@ ECPair.prototype.sign = function (hash) {
 ECPair.prototype.toWIF = function () {
   if (!this.d) throw new Error('Missing private key')
 
-  if(coins.isGroestlcoin(network))
-    return grswif.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
+  if (coins.isGroestlcoin(this.network)) {
+    return wifgrs.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
+  }
 
   return wif.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
 }

@@ -18,7 +18,9 @@ var curve = ecdsa.__curve
 var NETWORKS = require('../src/networks')
 var NETWORKS_LIST = [] // Object.values(NETWORKS)
 for (var networkName in NETWORKS) {
-  NETWORKS_LIST.push(NETWORKS[networkName])
+  if (networkName !== 'groestlcoin' && networkName !== 'groestlcoinTestnet') {
+    NETWORKS_LIST.push(NETWORKS[networkName])
+  }
 }
 
 describe('ECPair', function () {

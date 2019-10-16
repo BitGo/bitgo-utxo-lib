@@ -1,18 +1,17 @@
 var Buffer = require('safe-buffer').Buffer
 var bech32 = require('bech32')
-var bs58check = require('bs58check')
 var bscript = require('./script')
 var btemplates = require('./templates')
 var networks = require('./networks')
 var typeforce = require('typeforce')
 var types = require('./types')
 var bs58checkBase = require('bs58check/base')
-var coins = require('coins.js')
-var crypto = require('crypto.js')
+var coins = require('./coins')
+var crypto = require('./crypto')
 
 function fromBase58Check (address, network) {
   network = network || networks.bitcoin
-  hashFunction = coins.isGroestlcoin(network) ? groestl : hash256
+  var hashFunction = coins.isGroestlcoin(network) ? crypto.groestl : crypto.hash256
   var payload = bs58checkBase(hashFunction).decode(address)
 
   // TODO: 4.0.0, move to "toOutputScript"
@@ -53,7 +52,7 @@ function toBase58Check (hash, version, network) {
   multibyte ? payload.writeUInt16BE(version, 0) : payload.writeUInt8(version, 0)
   hash.copy(payload, offset)
 
-  hashFunction = coins.isGroestlcoin(network) ? groestl : hash256
+  var hashFunction = coins.isGroestlcoin(network) ? crypto.groestl : crypto.hash256
   return bs58checkBase(hashFunction).encode(payload)
 }
 
