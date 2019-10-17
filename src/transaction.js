@@ -11,7 +11,6 @@ var types = require('./types')
 var varuint = require('varuint-bitcoin')
 var blake2b = require('blake2b')
 
-
 function varSliceSize (someScript) {
   var length = someScript.length
 
