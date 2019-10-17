@@ -1,5 +1,6 @@
 var Buffer = require('safe-buffer').Buffer
 var BufferWriter = require('./bufferWriter')
+var crypto = require('./crypto')
 var bscript = require('./script')
 var bufferutils = require('./bufferutils')
 var coins = require('./coins')
@@ -9,7 +10,7 @@ var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
 var blake2b = require('blake2b')
-var crypto = require('./crypto')
+
 
 function varSliceSize (someScript) {
   var length = someScript.length
@@ -25,6 +26,7 @@ function vectorSize (someVector) {
   }, 0)
 }
 
+// By default, assume is a bitcoin transaction
 function Transaction (network = networks.bitcoin) {
   this.version = 1
   this.locktime = 0

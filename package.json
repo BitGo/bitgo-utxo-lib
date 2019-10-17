@@ -13,6 +13,7 @@
     "bitcoin",
     "zcash",
     "dash",
+    "groestlcoin",
     "browserify",
     "javascript"
   ],
