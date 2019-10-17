@@ -98,6 +98,42 @@
       "hash": "751e76e8199196d454941c45d1b3a323f1433bd6",
       "base58check": "tmLPctKo9j49rtCSKpwEBpLBeykiTGomGQs",
       "script": "OP_DUP OP_HASH160 751e76e8199196d454941c45d1b3a323f1433bd6 OP_EQUALVERIFY OP_CHECKSIG"
+    },
+    {
+      "network": "groestlcoin",
+      "version": 36,
+      "hash": "751e76e8199196d454941c45d1b3a323f1433bd6",
+      "base58check": "Ffqz14cyvZYJavD76t6oHNDJnGiWcZMVxR",
+      "script": "OP_DUP OP_HASH160 751e76e8199196d454941c45d1b3a323f1433bd6 OP_EQUALVERIFY OP_CHECKSIG"
+    },
+    {
+      "network": "groestlcoin",
+      "version": 5,
+      "hash": "cd7b44d0b03f2d026d1e586d7ae18903b0d385f6",
+      "base58check": "3LRW7jeCvQCRdPF8S3yUCfRAx4eqS1HUYL",
+      "script": "OP_HASH160 cd7b44d0b03f2d026d1e586d7ae18903b0d385f6 OP_EQUAL"
+    },
+    {
+      "network": "groestlcoinTestnet",
+      "version": 111,
+      "hash": "751e76e8199196d454941c45d1b3a323f1433bd6",
+      "base58check": "mrCDrCybB6J1vRfbwM5hemdJz73FuCDVWf",
+      "script": "OP_DUP OP_HASH160 751e76e8199196d454941c45d1b3a323f1433bd6 OP_EQUALVERIFY OP_CHECKSIG"
+    },
+    {
+      "network": "groestlcoinTestnet",
+      "version": 196,
+      "hash": "cd7b44d0b03f2d026d1e586d7ae18903b0d385f6",
+      "base58check": "2NByiBUaEXrhmqAsg7BbLpcQSAQs1JH1pzF",
+      "script": "OP_HASH160 cd7b44d0b03f2d026d1e586d7ae18903b0d385f6 OP_EQUAL"
+    },
+    {
+      "network": "groestlcoin",
+      "version": 0,
+      "bech32": "grs1qzzryawvm4lm4haq356f9hqg2gm6a00k2pdmwgk",
+      "data": "10864eb99baff75bf411a6925b810a46f5d7beca",
+      "script": "OP_0 10864eb99baff75bf411a6925b810a46f5d7beca"
+
     }
   ],
   "bech32": [

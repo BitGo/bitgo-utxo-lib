@@ -12,7 +12,7 @@ describe('address', function () {
       if (!f.base58check) return
 
       it('decodes ' + f.base58check, function () {
-        var decode = baddress.fromBase58Check(f.base58check)
+        var decode = baddress.fromBase58Check(f.base58check, networks[f.network])
 
         assert.strictEqual(decode.version, f.version)
         assert.strictEqual(decode.hash.toString('hex'), f.hash)
@@ -76,7 +76,7 @@ describe('address', function () {
       if (!f.base58check) return
 
       it('encodes ' + f.hash + ' (' + f.network + ')', function () {
-        var address = baddress.toBase58Check(Buffer.from(f.hash, 'hex'), f.version)
+        var address = baddress.toBase58Check(Buffer.from(f.hash, 'hex'), f.version, networks[f.network])
 
         assert.strictEqual(address, f.base58check)
       })

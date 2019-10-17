@@ -63,6 +63,22 @@
       "network": "bitcoin",
       "address": "1GrLCmVQXoyJXaPJQdqssNqwxvha1eUo2E",
       "WIF": "L5oLkpV3aqBjhki6LmvChTCV6odsp4SXM6FfU2Gppt5kFLaHLuZ9"
+    },
+    {
+      "d": "48968302285117906840285529799176770990048954789747953886390402978935544927851",
+      "Q": "044289801366bcee6172b771cf5a7f13aaecd237a0b9a1ff9d769cabc2e6b70a34cec320a0565fb7caf11b1ca2f445f9b7b012dda5718b3cface369ee3a034ded6",
+      "compressed": false,
+      "network": "groestlcoinTestnet",
+      "address": "mgWUuj1J1N882jmqFxtDepEC73RqvhFfS6",
+      "WIF": "92Qba5hnyWSn5Ffcka56yMQauaWY6ZLd91Vzxbi4a9CCevifcYq"
+    },
+    {
+      "d": "115792089237316195423570985008687907852837564279074904382605163141518161494336",
+      "Q": "0379be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+      "compressed": true,
+      "network": "groestlcoin",
+      "address": "Fm23egDn6JeqyBQRHjqMKteGd5yXfbVBBg",
+      "WIF": "L5oLkpV3aqBjhki6LmvChTCV6odsp4SXM6FfU2Gppt5kFLZWi8KU"
     }
   ],
   "invalid": {
@@ -125,6 +141,11 @@
       {
         "exception": "Invalid WIF length",
         "WIF": "38uMpGARR2BJy5p4dNFKYg9UsWNoBtkpbdrXDjmfvz8krCtw3T1W92ZDSR"
+      },
+      {
+        "exception": "Invalid network version",
+        "network": "groestlcoin",
+        "WIF": "92Qba5hnyWSn5Ffcka56yMQauaWY6ZLd91Vzxbi4a9CCevifcYq"
       }
     ]
   }

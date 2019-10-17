@@ -88,13 +88,21 @@ ECPair.fromPrivateKeyBuffer = function (buffer, network) {
 }
 
 ECPair.fromWIF = function (string, network) {
-  var decoded = wif.decode(string)
+  var decoded
+  var isGroestlcoin = false
+  try {
+    decoded = wif.decode(string)
+  } catch (e) {
+    if (e.message !== 'Invalid checksum') throw e
+    decoded = wifgrs.decode(string)
+    isGroestlcoin = true
+  }
   var version = decoded.version
 
   // list of networks?
   if (types.Array(network)) {
     network = network.filter(function (x) {
-      return version === x.wif
+      return (version === x.wif) && (isGroestlcoin ? x.coin === coins.GRS : x.coin !== coins.GRS)
     }).pop()  // We should not use pop since it depends on the order of the networks for the same wif
 
     if (!network) throw new Error('Unknown network version')

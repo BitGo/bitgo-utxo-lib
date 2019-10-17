@@ -402,6 +402,33 @@
         ]
       },
       {
+        "description": "Transaction w/ P2WPKH -> P2WPKH",
+        "network": "groestlcoin",
+        "version": 2,
+        "txHex": "02000000000101fa44fb9c3e2677286f3be38f3702a270c271ed712211f328427e520db0a70b480100000000fdffffff01f28c1f01000000001600142da1e7fd3ec09feafe73884a94924931eef4c7a70247304402205d5e6af8cf5b40d81e11d8b671d1a9a70b1bdf98360720ccb56af469f65c3e5d02204b4c1b3e0af0f2864283bd550e4c660f1b5c9489c204b5d771e963b8bc20717d0121021bf4beb26c517c24a595e8bbcf171a07bcb0aca3867f0c823ad7cf00b6514d9f15b92a00",
+        "inputs": [
+          {
+            "txId": "480ba7b00d527e4228f3112271ed71c270a202378fe33b6f2877263e9cfb44fa",
+            "vout": 1,
+            "prevTxScript": "OP_0 d1ebc5efea0fd718b3d697cc2d793b91440616ba",
+            "signs": [
+              {
+                "keyPair": "L2SWkid4Dzjr3UX7n24j72jEhVkF3aYdatWYC1rJdYHB1maUQebD",
+                "value": 18847114
+              }
+            ],
+            "sequence": 4294967293
+          }
+        ],
+        "outputs": [
+          {
+            "script": "OP_0 2da1e7fd3ec09feafe73884a94924931eef4c7a7",
+            "value": 18844914
+          }
+        ],
+        "locktime": 2799893
+      },
+      {
         "description": "Transaction w/ P2WSH|P2PK -> P2PKH",
         "txHex": "010000000001014533a3bc1e039bd787656068e135aaee10aee95a64776bfc047ee6a7c1ebdd2f0000000000ffffffff0160ea0000000000001976a914851a33a5ef0d4279bd5854949174e2c65b1d450088ac02473044022039725bb7291a14dd182dafdeaf3ea0d5c05c34f4617ccbaa46522ca913995c4e02203b170d072ed2e489e7424ad96d8fa888deb530be2d4c5d9aaddf111a7efdb2d3012321038de63cf582d058a399a176825c045672d5ff8ea25b64d28d4375dcdb14c02b2bac00000000",
         "inputs": [

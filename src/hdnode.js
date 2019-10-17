@@ -63,6 +63,7 @@ HDNode.fromBase58 = function (string, networks) {
   try {
     buffer = bs58checkBase(bcrypto.hash256).decode(string)
   } catch (e) {
+    if (e.message !== 'Invalid checksum') throw e
     buffer = bs58checkBase(bcrypto.groestl).decode(string)
     isGroestlChecksum = true
   }
@@ -80,7 +81,6 @@ HDNode.fromBase58 = function (string, networks) {
     }).pop()
 
     if (!network) throw new Error('Unknown network version')
-    if (network.coin === coins.GRS) throw new Error('This can\'t be GRS')
 
   // otherwise, assume a network object (or default to bitcoin)
   } else {
