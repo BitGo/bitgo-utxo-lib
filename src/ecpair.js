@@ -5,11 +5,14 @@ var randomBytes = require('randombytes')
 var typeforce = require('typeforce')
 var types = require('./types')
 var wif = require('wif')
+var wifgrs = require('wifgrs')
+var coins = require('./coins')
 
 var NETWORKS = require('./networks')
 var BigInteger = require('bigi')
 
 var ecurve = require('ecurve')
+var curve = ecurve.getCurveByName('secp256k1')
 var secp256k1 = ecdsa.__curve
 
 var fastcurve = require('./fastcurve')
@@ -57,6 +60,31 @@ ECPair.fromPublicKeyBuffer = function (buffer, network) {
     compressed: Q.compressed,
     network: network
   })
+}
+
+/**
+ * Create an ECPair from the raw private key bytes
+ * @param buffer {Buffer} Private key for the ECPair. Must be exactly 32 bytes.
+ * @param network {Object} Network for the ECPair. Defaults to bitcoin.
+ * @return {ECPair}
+ */
+ECPair.fromPrivateKeyBuffer = function (buffer, network) {
+  if (!Buffer.isBuffer(buffer) || buffer.length !== 32) {
+    throw new Error('invalid private key buffer')
+  }
+
+  var d = BigInteger.fromBuffer(buffer)
+
+  if (d.signum() <= 0 || d.compareTo(curve.n) >= 0) {
+    throw new Error('private key out of range')
+  }
+
+  var ecPair = new ECPair(d, null, { network: network })
+  if (!ecPair.__Q && curve) {
+    ecPair.__Q = ecurve.Point.decodeFrom(curve, fastcurve.publicKeyCreate(d.toBuffer(32), false))
+  }
+
+  return ecPair
 }
 
 ECPair.fromWIF = function (string, network) {
@@ -142,6 +170,10 @@ ECPair.prototype.sign = function (hash) {
 
 ECPair.prototype.toWIF = function () {
   if (!this.d) throw new Error('Missing private key')
+
+  if (coins.isGroestlcoin(this.network)) {
+    return wifgrs.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
+  }
 
   return wif.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
 }

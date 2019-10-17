@@ -1,6 +1,5 @@
 var Buffer = require('safe-buffer').Buffer
 var BufferWriter = require('./bufferWriter')
-var bcrypto = require('./crypto')
 var bscript = require('./script')
 var bufferutils = require('./bufferutils')
 var coins = require('./coins')
@@ -10,6 +9,7 @@ var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
 var blake2b = require('blake2b')
+var crypto = require('./crypto')
 
 function varSliceSize (someScript) {
   var length = someScript.length
@@ -46,6 +46,11 @@ function Transaction (network = networks.bitcoin) {
     this.vShieldedOutput = []
     this.bindingSig = 0
   }
+  if (coins.isDash(network)) {
+    // Dash version = 3
+    this.type = 0
+    this.extraPayload = Buffer.alloc(0)
+  }
 }
 
 Transaction.DEFAULT_SEQUENCE = 0xffffffff
@@ -77,6 +82,14 @@ Transaction.ZCASH_NOTECIPHERTEXT_SIZE = 1 + 8 + 32 + 32 + 512 + 16
 
 Transaction.ZCASH_G1_PREFIX_MASK = 0x02
 Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
+
+Transaction.DASH_NORMAL = 0
+Transaction.DASH_PROVIDER_REGISTER = 1
+Transaction.DASH_PROVIDER_UPDATE_SERVICE = 2
+Transaction.DASH_PROVIDER_UPDATE_REGISTRAR = 3
+Transaction.DASH_PROVIDER_UPDATE_REVOKE = 4
+Transaction.DASH_COINBASE = 5
+Transaction.DASH_QUORUM_COMMITMENT = 6
 
 Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStrict) {
   var offset = 0
@@ -257,6 +270,14 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     }
   }
 
+  if (coins.isDash(network)) {
+    tx.type = tx.version >> 16
+    tx.version = tx.version & 0xffff
+    if (tx.version === 3 && (tx.type < Transaction.DASH_NORMAL || tx.type > Transaction.DASH_QUORUM_COMMITMENT)) {
+      throw new Error('Unsupported Dash transaction type')
+    }
+  }
+
   var marker = buffer.readUInt8(offset)
   var flag = buffer.readUInt8(offset + 1)
 
@@ -337,6 +358,10 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     }
   }
 
+  if (tx.isDashSpecialTransaction()) {
+    tx.extraPayload = readVarSlice()
+  }
+
   tx.network = network
 
   if (__noStrict) return tx
@@ -367,6 +392,14 @@ Transaction.prototype.isOverwinterCompatible = function () {
 
 Transaction.prototype.supportsJoinSplits = function () {
   return coins.isZcash(this.network) && this.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION
+}
+
+Transaction.prototype.versionSupportsDashSpecialTransactions = function () {
+  return coins.isDash(this.network) && this.version >= 3
+}
+
+Transaction.prototype.isDashSpecialTransaction = function () {
+  return this.versionSupportsDashSpecialTransactions() && this.type !== Transaction.DASH_NORMAL
 }
 
 Transaction.prototype.isCoinbase = function () {
@@ -515,6 +548,7 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
     varuint.encodingLength(this.outs.length) +
     this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0) +
     this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) +
+    (this.isDashSpecialTransaction() ? varSliceSize(this.extraPayload) : 0) +
     (hasWitnesses ? this.ins.reduce(function (sum, input) { return sum + vectorSize(input.witness) }, 0) : 0)
   )
 }
@@ -524,6 +558,11 @@ Transaction.prototype.clone = function () {
   newTx.version = this.version
   newTx.locktime = this.locktime
   newTx.network = this.network
+
+  if (coins.isDash(this.network)) {
+    newTx.type = this.type
+    newTx.extraPayload = this.extraPayload
+  }
 
   if (this.isOverwinterCompatible()) {
     newTx.overwintered = this.overwintered
@@ -681,7 +720,10 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   buffer.writeInt32LE(hashType, buffer.length - 4)
   txTmp.__toBuffer(buffer, 0, false)
 
-  return this.network.hashFunctions.transaction(buffer)
+  if (coins.isGroestlcoin(this.network)) {
+    return crypto.sha256(buffer)
+  }
+  return crypto.hash256(buffer)
 }
 
 /**
@@ -712,7 +754,10 @@ Transaction.prototype.getPrevoutHash = function (hashType) {
     if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashPrevoutHash')
     }
-    return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
+    if (coins.isGroestlcoin(this.network)) {
+      return crypto.sha256(bufferWriter.getBuffer())
+    }
+    return crypto.hash256(bufferWriter.getBuffer())
   }
   return ZERO
 }
@@ -735,7 +780,10 @@ Transaction.prototype.getSequenceHash = function (hashType) {
     if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashSequencHash')
     }
-    return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
+    if (coins.isGroestlcoin(this.network)) {
+      return crypto.sha256(bufferWriter.getBuffer())
+    }
+    return crypto.hash256(bufferWriter.getBuffer())
   }
   return ZERO
 }
@@ -764,7 +812,10 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
     if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashOutputsHash')
     }
-    return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
+    if (coins.isGroestlcoin(this.network)) {
+      return crypto.sha256(bufferWriter.getBuffer())
+    }
+    return crypto.hash256(bufferWriter.getBuffer())
   } else if ((hashType & 0x1f) === Transaction.SIGHASH_SINGLE && inIndex < this.outs.length) {
     // Write only the output specified in inIndex
     var output = this.outs[inIndex]
@@ -776,7 +827,10 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
     if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashOutputsHash')
     }
-    return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
+    if (coins.isGroestlcoin(this.network)) {
+      return crypto.sha256(bufferWriter.getBuffer())
+    }
+    return crypto.hash256(bufferWriter.getBuffer())
   }
   return ZERO
 }
@@ -887,7 +941,10 @@ Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value
   bufferWriter.writeSlice(hashOutputs)
   bufferWriter.writeUInt32(this.locktime)
   bufferWriter.writeUInt32(hashType)
-  return this.network.hashFunctions.transaction(bufferWriter.getBuffer())
+  if (coins.isGroestlcoin(this.network)) {
+    return crypto.sha256(bufferWriter.getBuffer())
+  }
+  return crypto.hash256(bufferWriter.getBuffer())
 }
 
 /**
@@ -943,7 +1000,10 @@ Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, i
 }
 
 Transaction.prototype.getHash = function () {
-  return this.network.hashFunctions.transaction(this.__toBuffer(undefined, undefined, false))
+  if (coins.isGroestlcoin(this.network)) {
+    return crypto.sha256(this.__toBuffer(undefined, undefined, false))
+  }
+  return crypto.hash256(this.__toBuffer(undefined, undefined, false))
 }
 
 Transaction.prototype.getId = function () {
@@ -961,6 +1021,7 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   var offset = initialOffset || 0
   function writeSlice (slice) { offset += slice.copy(buffer, offset) }
   function writeUInt8 (i) { offset = buffer.writeUInt8(i, offset) }
+  function writeUInt16 (i) { offset = buffer.writeUInt16LE(i, offset) }
   function writeUInt32 (i) { offset = buffer.writeUInt32LE(i, offset) }
   function writeInt32 (i) { offset = buffer.writeInt32LE(i, offset) }
   function writeUInt64 (i) { offset = bufferutils.writeUInt64LE(buffer, i, offset) }
@@ -985,6 +1046,9 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     var mask = (this.overwintered ? 1 : 0)
     writeInt32(this.version | (mask << 31))  // Set overwinter bit
     writeUInt32(this.versionGroupId)
+  } else if (this.isDashSpecialTransaction()) {
+    writeUInt16(this.version)
+    writeUInt16(this.type)
   } else {
     writeInt32(this.version)
   }
@@ -1098,6 +1162,10 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
 
   if (this.isSaplingCompatible() && this.vShieldedSpend.length + this.vShieldedOutput.length > 0) {
     writeSlice(this.bindingSig)
+  }
+
+  if (this.isDashSpecialTransaction()) {
+    writeVarSlice(this.extraPayload)
   }
 
   // avoid slicing unless necessary

@@ -2,18 +2,6 @@
 // Dogecoin BIP32 is a proposed standard: https://bitcointalk.org/index.php?topic=409731
 var coins = require('./coins')
 
-const bcrypto = require('./crypto')
-
-const hashFunctions = {
-  address: bcrypto.hash256, // sha256x2
-  transaction: bcrypto.hash256 // sha256x2
-}
-
-const groestlHashFunctions = {
-  address: bcrypto.groestl,
-  transaction: bcrypto.sha256
-}
-
 module.exports = {
   dash: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
@@ -24,8 +12,7 @@ module.exports = {
     pubKeyHash: 0x4c, // https://dash-docs.github.io/en/developer-reference#opcodes
     scriptHash: 0x10,
     wif: 0xcc,
-    coin: coins.DASH,
-    hashFunctions: hashFunctions
+    coin: coins.DASH
   },
   dashTest: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
@@ -36,8 +23,7 @@ module.exports = {
     pubKeyHash: 0x8c, // https://dash-docs.github.io/en/developer-reference#opcodes
     scriptHash: 0x13,
     wif: 0xef, // https://github.com/dashpay/godashutil/blob/master/wif.go#L72
-    coin: coins.DASH,
-    hashFunctions: hashFunctions
+    coin: coins.DASH
   },
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -50,8 +36,7 @@ module.exports = {
     scriptHash: 0x05,
     wif: 0x80,
     coin: coins.BCH,
-    forkId: 0x00,
-    hashFunctions: hashFunctions
+    forkId: 0x00
   },
   bitcoincashTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -63,8 +48,7 @@ module.exports = {
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
-    coin: coins.BCH,
-    hashFunctions: hashFunctions
+    coin: coins.BCH
   },
   bitcoinsv: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -77,8 +61,7 @@ module.exports = {
     scriptHash: 0x05,
     wif: 0x80,
     coin: coins.BSV,
-    forkId: 0x00,
-    hashFunctions: hashFunctions
+    forkId: 0x00
   },
   bitcoinsvTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -90,8 +73,7 @@ module.exports = {
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
-    coin: coins.BSV,
-    hashFunctions: hashFunctions
+    coin: coins.BSV
   },
   zcash: {
     messagePrefix: '\x18ZCash Signed Message:\n',
@@ -111,8 +93,7 @@ module.exports = {
       3: 0x5ba81b19,
       4: 0x76b809bb
     },
-    coin: coins.ZEC,
-    hashFunctions: hashFunctions
+    coin: coins.ZEC
   },
   zcashTest: {
     messagePrefix: '\x18ZCash Signed Message:\n',
@@ -128,10 +109,10 @@ module.exports = {
       1: 0x00,
       2: 0x00,
       3: 0x5ba81b19,
-      4: 0x76b809bb
+      // 4: 0x76b809bb (old Sapling branch id)
+      4: 0x2bb40e60
     },
-    coin: coins.ZEC,
-    hashFunctions: hashFunctions
+    coin: coins.ZEC
   },
   bitcoingold: {
     messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
@@ -144,8 +125,31 @@ module.exports = {
     scriptHash: 0x17,
     wif: 0x80,
     coin: coins.BTG,
-    forkId: 0x4F, /* 79 */
-    hashFunctions: hashFunctions
+    forkId: 0x4F /* 79 */
+  },
+  litecoin: {
+    messagePrefix: '\x19Litecoin Signed Message:\n',
+    bech32: 'ltc',
+    bip32: {
+      public: 0x019da462,
+      private: 0x019d9cfe
+    },
+    pubKeyHash: 0x30,
+    scriptHash: 0x32,
+    wif: 0xb0,
+    coin: coins.LTC
+  },
+  litecoinTest: {
+    messagePrefix: '\x19Litecoin Signed Message:\n',
+    bech32: 'tltc',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x6f,
+    scriptHash: 0x3a,
+    wif: 0xb0,
+    coin: coins.LTC
   },
   bitcoin: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -157,8 +161,7 @@ module.exports = {
     pubKeyHash: 0x00,
     scriptHash: 0x05,
     wif: 0x80,
-    coin: coins.BTC,
-    hashFunctions: hashFunctions
+    coin: coins.BTC
   },
   testnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -170,20 +173,7 @@ module.exports = {
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
-    coin: coins.BTC,
-    hashFunctions: hashFunctions
-  },
-  litecoin: {
-    messagePrefix: '\x19Litecoin Signed Message:\n',
-    bip32: {
-      public: 0x019da462,
-      private: 0x019d9cfe
-    },
-    pubKeyHash: 0x30,
-    scriptHash: 0x32,
-    wif: 0xb0,
-    coin: coins.LTC,
-    hashFunctions: hashFunctions
+    coin: coins.BTC
   },
   groestlcoin: {
     messagePrefix: '\x1cGroestlCoin Signed Message:\n',
@@ -195,8 +185,7 @@ module.exports = {
     pubKeyHash: 0x24,
     scriptHash: 0x05,
     wif: 0x80,
-    coin: coins.GRS,
-    hashFunctions: groestlHashFunctions
+    coin: coins.GRS
   },
   groestlcoinTestnet: {
     messagePrefix: '\x1cGroestlCoin Signed Message:\n',
@@ -208,7 +197,6 @@ module.exports = {
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
-    coin: coins.GRS,
-    hashFunctions: groestlHashFunctions
+    coin: coins.GRS
   }
 }

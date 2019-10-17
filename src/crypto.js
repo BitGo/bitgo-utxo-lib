@@ -1,6 +1,6 @@
 var createHash = require('create-hash')
-var groestlhash = require('groestl-hash-js')
 var crypto = require('crypto')
+var groestlhash = require('groestl-hash-js')
 
 function ripemd160 (buffer) {
   var hash = 'rmd160'

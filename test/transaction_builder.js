@@ -186,6 +186,14 @@ describe('TransactionBuilder', function () {
         assert.throws(function () {
           TransactionBuilder.fromTransaction(tx, NETWORKS.testnet)
         }, new RegExp(errorMessage))
+
+        assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx, NETWORKS.groestlcoin)
+        }, new RegExp(errorMessage))
+
+        assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx, NETWORKS.groestlcoinTestnet)
+        }, new RegExp(errorMessage))
       })
     })
 

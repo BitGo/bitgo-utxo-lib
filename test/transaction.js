@@ -143,10 +143,15 @@ describe('Transaction', function () {
       it('imports ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.dashTest)
         assert.equal(tx.version, testData.version)
-        assert.equal(tx.versionGroupId, testData.versionGroupId)
+        if (tx.versionSupportsDashSpecialTransactions()) {
+          assert.equal(tx.type, testData.type)
+        }
         assert.equal(tx.locktime, testData.locktime)
         assert.equal(tx.ins.length, testData.vin.length)
         assert.equal(tx.outs.length, testData.vout.length)
+        if (tx.isDashSpecialTransaction()) {
+          assert.equal(tx.extraPayload.toString('hex'), testData.extraPayload)
+        }
       })
     })
 
@@ -163,6 +168,15 @@ describe('Transaction', function () {
         const tx = Transaction.fromHex(testData.hex, networks.dashTest)
         const clonedTx = tx.clone()
         assert.equal(clonedTx.toHex(), testData.hex)
+      })
+    })
+  })
+
+  describe('getPrevoutHash', function () {
+    fixtures.dasht.valid.filter(f => !!f.proRegTx).forEach(function (testData) {
+      it('produces the correct inputsHash on ' + testData.description, function () {
+        const tx = Transaction.fromHex(testData.hex, networks.dashTest)
+        assert.equal(tx.getPrevoutHash(Transaction.SIGHASH_ALL).reverse().toString('hex'), testData.proRegTx.inputsHash)
       })
     })
   })

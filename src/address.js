@@ -1,16 +1,18 @@
 var Buffer = require('safe-buffer').Buffer
 var bech32 = require('bech32')
-var bs58check = require('bs58check')
 var bscript = require('./script')
 var btemplates = require('./templates')
 var networks = require('./networks')
 var typeforce = require('typeforce')
 var types = require('./types')
 var bs58checkBase = require('bs58check/base')
+var coins = require('./coins')
+var crypto = require('./crypto')
 
 function fromBase58Check (address, network) {
   network = network || networks.bitcoin
-  var payload = bs58checkBase(network.hashFunctions.address).decode(address)
+  var hashFunction = coins.isGroestlcoin(network) ? crypto.groestl : crypto.hash256
+  var payload = bs58checkBase(hashFunction).decode(address)
 
   // TODO: 4.0.0, move to "toOutputScript"
   if (payload.length < 21) throw new TypeError(address + ' is too short')
@@ -50,7 +52,8 @@ function toBase58Check (hash, version, network) {
   multibyte ? payload.writeUInt16BE(version, 0) : payload.writeUInt8(version, 0)
   hash.copy(payload, offset)
 
-  return bs58checkBase(network.hashFunctions.address).encode(payload)
+  var hashFunction = coins.isGroestlcoin(network) ? crypto.groestl : crypto.hash256
+  return bs58checkBase(hashFunction).encode(payload)
 }
 
 function toBech32 (data, version, prefix) {
