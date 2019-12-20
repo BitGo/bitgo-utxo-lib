@@ -12,7 +12,7 @@ const {
 } = require('..')
 
 describe('TransactionBuilder (BTG)', function () {
-  var network = networks['bitcoingold']
+  var network = networks.bitcoingold
   it('Build and sign p2pkh', function () {
     var value = 50 * 1e8
     var txid = '40c8a218923f23df3692530fa8e475251c50c7d630dccbdfbd92ba8092f4aa13'
