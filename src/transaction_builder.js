@@ -533,9 +533,6 @@ TransactionBuilder.prototype.setConsensusBranchId = function (consensusBranchId)
   if (!coins.isZcash(this.network)) {
     throw new Error('consensusBranchId can only be set for Zcash transactions')
   }
-  if (!this.inputs.every(function (input) { return input.signatures === undefined })) {
-    throw new Error('Changing the consensusBranchId for a partially signed transaction would invalidate signatures')
-  }
   typeforce(types.UInt32, consensusBranchId)
   this.tx.consensusBranchId = consensusBranchId
 }
