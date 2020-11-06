@@ -16,6 +16,7 @@ wif            src/chainparams.cpp  base58Prefixes[SECRET_KEY]        Testnets h
 
 const coins = {
   BCH: 'bch',
+  BCHA: 'bcha',
   BSV: 'bsv',
   BTC: 'btc',
   BTG: 'btg',
@@ -67,6 +68,27 @@ module.exports = {
 
   // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
   // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
+  // see: https://www.bitcoincash.org/spec/2020-11-15-upgrade.html
+  bitcoinabc: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bip32: getDefaultBip32Mainnet(),
+    pubKeyHash: 0x00,
+    scriptHash: 0x05,
+    wif: 0x80,
+    coin: coins.BCHA,
+    forkId: 0x00
+  },
+  bitcoinabcTestnet: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    wif: 0xef,
+    coin: coins.BCHA
+  },
+
+  // https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/blob/master/src/validation.cpp
+  // https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/blob/master/src/chainparams.cpp
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bip32: getDefaultBip32Mainnet(),
